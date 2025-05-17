@@ -12,9 +12,9 @@ export const EnviarCorreoDeVerificacion = async(plantilla,correo,codigo) =>
         }
     })
     const OpcionesDeCorreo = {
-        from: '"GameLogRecovery" '+process.env.CORREO,
+        from: '"Recuperación de contraseña EduShare" '+process.env.CORREO,
         to: correo,
-        subject:'Código de verificación cambio de credenciales de acceso - GameLogRecovery',
+        subject:'Código de verificación EduShare',
         html: HTML
     }
     try

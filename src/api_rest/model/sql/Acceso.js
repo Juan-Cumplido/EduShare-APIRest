@@ -1,10 +1,12 @@
 import sql from 'mssql';
+import path from 'path';
+import { promises as fs } from 'fs';
 import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
 import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatos } from '../../utilidades/Constantes.js';
 
 export class ModeloAcceso {
 
-static async InsertarNuevaCuenta({ datos }) {
+    static async InsertarNuevaCuenta({ datos }) {
         let resultadoInsercion;
         const ConfiguracionConexion = RetornarTipoDeConexion();
         let conexion;
@@ -27,12 +29,10 @@ static async InsertarNuevaCuenta({ datos }) {
             if (!fotoPerfil) {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
-                    //Eliminar esto después
-                    console.log('Ruta de la imagen por defecto:', defaultImagePath)
                     fotoPerfilBuffer = await fs.readFile(defaultImagePath);
                 } catch (error) {
                     console.error('Error al cargar imagen por defecto:', error);
-                    fotoPerfilBuffer = null; // Si falla, se envía NULL a la BD
+                    fotoPerfilBuffer = null; 
                 }
             } else {
                 fotoPerfilBuffer = fotoPerfil;
@@ -67,6 +67,35 @@ static async InsertarNuevaCuenta({ datos }) {
         return resultadoInsercion;
     }
 
-    
+    static async RecuperarContraseña({datos}){
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
 
+            const {
+                correo,
+            } = datos;
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('correo', sql.NVarChar(256), correo)
+
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+
+                .execute('spi_RecuperarContraseñaCorreo')
+
+            resultadoRecuperacion =  MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error) {
+            console.log(`Error al intenterar recuperar la contraseña con el correo: ${error.message}`)
+            //logger({ mensaje: `Error al intenterar recuperar la contraseña con el correo: ${error.message}` });
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+         return resultadoRecuperacion;
+    }
 }
