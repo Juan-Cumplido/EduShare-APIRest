@@ -56,8 +56,7 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
      */
     router.post('/registro', ControladorAcceso.RegistrarAcceso);
 
-
-
+    router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena) 
 
     /**
      * @swagger

@@ -71,6 +71,17 @@ CREATE TABLE Documento (
 );
 GO
 
+-- Tabla MateriaYRama
+CREATE TABLE MateriaYRama (
+  idMateriaYRama INT IDENTITY(1,1) PRIMARY KEY,
+  idMateria INT NOT NULL,
+  idRama INT NOT NULL,
+  FOREIGN KEY (idRama) REFERENCES Rama(idRama),
+  FOREIGN KEY (idMateria) REFERENCES Materia(idMateria),
+  UNIQUE(idMateria, idRama)
+);
+GO
+
 -- Tabla Publicacion
 CREATE TABLE Publicacion (
     idPublicacion INT IDENTITY(1,1) PRIMARY KEY,
@@ -88,17 +99,6 @@ CREATE TABLE Publicacion (
     FOREIGN KEY (idMateriaYRama) REFERENCES MateriaYRama(idMateriaYRama),
     FOREIGN KEY (idUsuarioRegistrado) REFERENCES UsuarioRegistrado(idUsuarioRegistrado),
     FOREIGN KEY (idDocumento) REFERENCES Documento(idDocumento)
-);
-GO
-
--- Tabla MateriaYRama
-CREATE TABLE MateriaYRama (
-  idMateriaYRama INT IDENTITY(1,1) PRIMARY KEY,
-  idMateria INT NOT NULL,
-  idRama INT NOT NULL,
-  FOREIGN KEY (idRama) REFERENCES Rama(idRama),
-  FOREIGN KEY (idMateria) REFERENCES Materia(idMateria),
-  UNIQUE(idMateria, idRama)
 );
 GO
 

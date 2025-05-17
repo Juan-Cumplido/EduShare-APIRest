@@ -15,7 +15,7 @@ const CuentaEsquema = zod.object(
     segundoApellido: zod.string({ invalid_type_error: 'El segundo apellido no es válido'}).min(0).max(80).regex(SoloLetras).nullable(),
     
     
-    fotoPerfil: zod.any().optional().nullable(),
+    fotoPerfil: zod.any().optional(),
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
 }
 )
