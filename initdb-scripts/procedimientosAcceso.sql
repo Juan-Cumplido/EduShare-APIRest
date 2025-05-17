@@ -9,7 +9,7 @@ CREATE OR ALTER PROCEDURE spi_InsertarCuentaConUsuarioRegistrado
     @nombre NVARCHAR(30),
     @primerApellido NVARCHAR(30),
     @segundoApellido NVARCHAR(30),
-    @fotoPerfil BINARY(MAX),
+    @fotoPerfil VARBINARY(MAX),
     @idInstitucion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT

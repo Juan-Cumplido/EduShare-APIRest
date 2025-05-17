@@ -1,4 +1,5 @@
 import { ValidarEdicionParcialAcceso, ValidarEliminacionAcceso, ValidarInsercionAcceso, ValidarCredencialesAcceso } from "../schemas/Acceso.js";
+import { ValidarCorreo } from "../schemas/Publicacion.js";
 import { logger } from "../utilidades/logger.js";
 
 export class AccesoControlador
@@ -45,6 +46,14 @@ export class AccesoControlador
                 estado: 500,
                 mensaje: "Ha ocurrido un error al querer registrar el Acceso."
             });
+        }
+    }
+
+    RecuperarContrasena = async(req, res) =>{
+        try {
+
+        } catch (error){
+            const ResultadoValidacion = ValidarCorreo(req.body)
         }
     }
 
