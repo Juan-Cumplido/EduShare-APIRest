@@ -58,6 +58,15 @@ const PublicacionEsquemaEdicion = zod.object({
   idDocumento: zod.number().int().positive().optional(),
 });
 
+const CorreoEsquema = zod.object({
+  correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
+    'El correo es demasiado grande. Max 256')
+});
+
+export function ValidarCorreo(entrada){
+  return CorreoEsquema.parse(entrada)
+}
+
 export function ValidarInsercionPublicacion(entrada) {
   return PublicacionEsquema.safeParse(entrada);
 }
