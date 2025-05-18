@@ -36,5 +36,13 @@
     "supertest": "^7.1.0",
     "swagger-autogen": "^2.23.7"
   },
-  "description": ""
+  "description": "API para la aplicación EduShare",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Juan-Cumplido/EduShare-APIRest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Juan-Cumplido/EduShare-APIRest/issues"
+  },
+  "homepage": "https://github.com/Juan-Cumplido/EduShare-APIRest#readme"
 }
