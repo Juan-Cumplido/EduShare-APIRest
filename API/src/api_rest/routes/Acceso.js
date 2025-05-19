@@ -56,7 +56,79 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
      */
     router.post('/registro', ControladorAcceso.RegistrarAcceso);
 
-    router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena) 
+        /**
+     * @swagger
+     * /edushare/acceso/recuperarContrasena:
+     *   post:
+     *     summary: Inicia el proceso de recuperación de contraseña
+     *     tags: [Acceso]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - correo
+     *             properties:
+     *               correo:
+     *                 type: string
+     *                 format: email
+     *     responses:
+     *       200:
+     *         description: Código de verificación enviado correctamente
+     *       400:
+     *         description: Formato de correo inválido
+     *       404:
+     *         description: Correo no registrado
+     *       500:
+     *         description: Error del servidor
+     */
+    router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena);
+
+        /**
+     * @swagger
+     * /edushare/acceso/verificarCodigoYCambiarContrasena:
+     *   post:
+     *     summary: Verifica el código de recuperación y cambia la contraseña
+     *     tags: [Acceso]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - correo
+     *               - codigo
+     *               - nuevaContrasenia
+     *             properties:
+     *               correo:
+     *                 type: string
+     *                 format: email
+     *               codigo:
+     *                 type: string
+     *                 description: Código de verificación de 6 dígitos
+     *               nuevaContrasenia:
+     *                 type: string
+     *                 minLength: 8
+     *     responses:
+     *       200:
+     *         description: Contraseña actualizada correctamente
+     *       400:
+     *         description: Código incorrecto o formato inválido
+     *       401:
+     *         description: Código expirado
+     *       404:
+     *         description: No hay una solicitud de recuperación para este correo
+     *       500:
+     *         description: Error del servidor
+     */ 
+    router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena);
+
+
+
+    //router.post('/login', ControladorAcceso.VerificarCredenciales);
 
     /**
      * @swagger
