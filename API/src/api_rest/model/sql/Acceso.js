@@ -2,7 +2,7 @@ import sql from 'mssql';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatos } from '../../utilidades/Constantes.js';
+import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatosInfoAdicional } from '../../utilidades/Constantes.js';
 
 export class ModeloAcceso {
 
@@ -30,7 +30,7 @@ export class ModeloAcceso {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
                     fotoPerfilBuffer = await fs.readFile(defaultImagePath);
-                    console.log(defaultImagePath);
+                    fotoPerfilBase64 = `data:image/jpeg;base64,${fotoPerfilBuffer.toString('base64')}`
                 } catch (error) {
                     console.log('Error al cargar imagen por defecto:', error);
                     fotoPerfilBuffer = null; 
@@ -124,5 +124,49 @@ export class ModeloAcceso {
             }
         }
         return resultadoCambio;
+    }
+    
+    static async VerificarCredenciales({ datos }) {
+    let resultadoVerificacion;
+    const ConfiguracionConexion = RetornarTipoDeConexion();
+    let conexion;
+    try {
+        conexion = await sql.connect(ConfiguracionConexion);
+        const {
+            identifier,
+            contrasenia
+        } = datos;
+            
+        const Solicitud = conexion.request();
+        const ResultadoSolicitud = await Solicitud 
+            .input('identifier', sql.NVarChar(256), identifier)
+            .input('contrasenia', sql.NVarChar(300), contrasenia)
+            .output('resultado', sql.Int)
+            .output('mensaje', sql.NVarChar(200))
+            .output('idUsuarioRegistrado', sql.Int)
+            .output('nombre', sql.NVarChar(30))
+            .output('fotoPerfil', sql.NVarChar(sql.MAX))
+            .execute('spi_VerificarCredenciales');
+
+        resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
+            datos: {
+                resultado: ResultadoSolicitud.output.resultado,
+                mensaje: ResultadoSolicitud.output.mensaje,
+                datosAdicionales: {
+                    idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
+                    nombre: ResultadoSolicitud.output.nombre || null, 
+                    fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+                }
+            }
+        });
+    } catch (error) {
+        console.log(`Error al verificar credenciales: ${error.message}`);
+        logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
+    } finally {
+        if (conexion) {
+            await sql.close();
+        }
+    }
+    return resultadoVerificacion;
     }
 }

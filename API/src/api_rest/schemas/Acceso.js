@@ -1,11 +1,11 @@
 import zod from 'zod';
-import { SoloLetras, SoloLetrasNumerosCaracteres, SoloLetrasYNumeros, SoloRutas } from '../utilidades/RegexValidadores.js';
+import { SoloLetras, SoloLetrasNumerosCaracteres, SoloLetrasYNumeros, SoloRutas, SoloCorreos, SoloIdentificadores } from '../utilidades/RegexValidadores.js';
 
 
 const CuentaEsquema = zod.object(
 {
     correo: zod.string().email({ invalid_type_error: 'El correo ingresado no es válido',required_error: 'El correo es un campo requerido'}).max(256),
-    contrasenia: zod.string({ invalid_type_error: 'La contraseña ingresado no es válido',required_error: 'El contraseña es un campo requerido'}).min(8).max(300),
+    contrasenia: zod.string({ invalid_type_error: 'La contraseña ingresado no es válido',required_error: 'La contraseña es un campo requerido'}).min(8).max(300),
     nombreUsuario: zod.string({ invalid_type_error: 'El nombre de usuario ingresado no es válido',required_error: 'El nombre de usuario es un campo requerido'}).min(2).max(15).regex(SoloLetrasYNumeros,
          {message: 'El nombre de usuario solo puede contener letras y números'}
     ),
@@ -25,14 +25,19 @@ const CorreoEsquema = zod.object({
     'El correo es demasiado grande. Max 256')
 });
 
-const InicioSesionEsquema = zod.object(
-{
-    correo: zod.string().email({ invalid_type_error: 'El correo ingresado no es válido',required_error: 'El correo es un campo requerido'}).max(256),
-    nombreUsuario: zod.string({ invalid_type_error: 'El nombre de usuario ingresado no es válido',required_error: 'El nombre de usuario es un campo requerido'}).max(15).regex(SoloLetrasYNumeros,
-         {message: 'El nombre de usuario solo puede contener letras y números'}
-    ),
-}    
-)
+
+
+const InicioSesionEsquema = zod.object({
+    identifier: zod.string()
+        .min(1)
+        .max(256)
+        .regex(SoloIdentificadores, {
+            message: 'Debe ser un nombre de usuario (solo letras y números) o correo electrónico válido'
+        }),
+    contrasenia: zod.string({invalid_type_error: 'La contraseña ingresada no es válida', required_error: 'La contraseña es un campo requerido'}).min(8, 
+        { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
+});
+
 
 const ContraseñaNuevaEsquema = zod.object({
     correo: zod.string().email({ message: "Formato de correo electrónico inválido" }),
@@ -46,6 +51,7 @@ const ContraseñaNuevaEsquema = zod.object({
 });
 
 
+
 const CuentaEsquemaEdicion = zod.object(
 {
     idAcceso: zod.number({ invalid_type_error: 'El idAcceso ingresado no es válido',required_error: 'El idAcceso es un campo requerido'}).int().positive(),
@@ -56,11 +62,14 @@ const CuentaEsquemaEdicion = zod.object(
 }
 )
 
+export function ValidarCredenciales(entrada) {
+    return InicioSesionEsquema.safeParse(entrada);
+}
+
 
 export function ValidarCambioContraseña(entrada){
     return ContraseñaNuevaEsquema.safeParse(entrada)
 }
-
 
 export function ValidarCorreo(entrada){
   return CorreoEsquema.safeParse(entrada)
@@ -76,7 +85,3 @@ export function ValidarEdicionParcialAcceso(entrada)
     return CuentaEsquemaEdicion.partial().safeParse(entrada);
 }
 
-export function ValidarCredencialesAcceso(entrada)
-{
-    return CuentaEsquema.partial().safeParse(entrada);
-}
