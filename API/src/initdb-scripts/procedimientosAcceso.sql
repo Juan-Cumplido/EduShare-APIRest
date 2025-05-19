@@ -63,6 +63,64 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE spi_RecuperarContraseñaCorreo
+    @correo NVARCHAR(256),
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo)
+        BEGIN
+            SET @resultado = 200;
+            SET @mensaje = 'Se ha iniciado el proceso de recuperación de contraseña';
+        END
+        ELSE
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El correo proporcionado no está registrado en el sistema';
+        END
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al procesar la solicitud de recuperación: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE spi_CambiarContrasena
+    @correo NVARCHAR(256),
+    @nuevaContrasenia NVARCHAR(300),
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El correo proporcionado no está registrado en el sistema';
+            RETURN;
+        END
+        
+        UPDATE Acceso
+        SET contrasenia = @nuevaContrasenia
+        WHERE correo = @correo;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Contraseña actualizada correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al actualizar la contraseña: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
 -- Procedimiento almacenado para verificar credenciales
 CREATE OR ALTER PROCEDURE sps_VerificarCredenciales
     @nombreUsuario NVARCHAR(15),
