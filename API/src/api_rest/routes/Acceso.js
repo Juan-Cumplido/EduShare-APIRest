@@ -127,8 +127,42 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
     router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena);
 
 
-
-    //router.post('/login', ControladorAcceso.VerificarCredenciales);
+            /**
+     * @swagger
+     * /edushare/acceso/VerificarCredenciales:
+     *   post:
+     *     summary: Permite loguear al usuario
+     *     tags: [Acceso]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - nombreUsuario
+     *               - correo
+     *               - contraseña
+     *             properties:
+     *               correo:
+     *                 type: string
+     *                 format: email
+     *               nombreUsuario:
+     *                 type: string
+     *               contraseña:
+     *                 type: string
+     *                 minLength: 8
+     *     responses:
+     *       200:
+     *         description: Credenciales correctas
+     *       400:
+     *         description: Código incorrecto o formato inválido
+     *       404:
+     *         description: No existe un usuario con esas credenciales
+     *       500:
+     *         description: Error del servidor
+     */ 
+    router.post('/login', ControladorAcceso.VerificarCredenciales);
 
     /**
      * @swagger

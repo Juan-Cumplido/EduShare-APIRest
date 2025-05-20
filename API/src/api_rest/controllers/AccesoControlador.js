@@ -1,4 +1,4 @@
-import { ValidarInsercionAcceso, ValidarCredencialesAcceso, ValidarCambioContraseña, ValidarCorreo } from "../schemas/Acceso.js";
+import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo } from "../schemas/Acceso.js";
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
@@ -168,7 +168,7 @@ export class AccesoControlador
             
             let codigoResultado = parseInt(ResultadoCambio.resultado);
             
-            if (codigoResultado === 200) {
+            if (codigoResultado == 200) {
                 res.status(200).json({
                     error: false,
                     estado: 200,
@@ -190,4 +190,50 @@ export class AccesoControlador
             });
         }
     }
+
+VerificarCredenciales = async (req, res) => {
+    try {
+        const ResultadoValidacion = ValidarCredenciales(req.body);
+
+        if (!ResultadoValidacion.success) {
+            return res.status(400).json({
+                error: true,
+                estado: 400,
+                mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+            });
+        }
+
+        const resultado = await this.modeloAcceso.VerificarCredenciales({ 
+            datos: ResultadoValidacion.data 
+        });
+
+        let codigoResultado = parseInt(resultado.resultado);
+
+        if (codigoResultado != 200) {
+            return res.status(codigoResultado).json({
+                error: true,
+                estado: codigoResultado,
+                mensaje: resultado.mensaje
+            });
+        }
+
+        return res.status(200).json({
+            error: false,
+            estado: 200,
+            mensaje: resultado.mensaje,
+            datos: {
+                idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
+                nombre: resultado.datosAdicionales.nombre,
+                fotoPerfil: resultado.datosAdicionales.fotoPerfil
+            }
+        });
+    } catch (error) {
+        logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
+        res.status(500).json({
+            error: true,
+            estado: 500,
+            mensaje: "Ha ocurrido un error al intentar iniciar sesión"
+        });
+    }
+}
 }

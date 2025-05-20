@@ -9,7 +9,7 @@ CREATE OR ALTER PROCEDURE spi_InsertarCuentaConUsuarioRegistrado
     @nombre NVARCHAR(30),
     @primerApellido NVARCHAR(30),
     @segundoApellido NVARCHAR(30),
-    @fotoPerfil VARBINARY(MAX),
+    @fotoPerfil NVARCHAR(MAX),
     @idInstitucion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -19,7 +19,6 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
             
-        -- Verificar si el correo ya existe
         IF EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo)
         BEGIN
             SET @resultado = 409;
@@ -28,7 +27,6 @@ BEGIN
             RETURN;
         END
         
-        -- Verificar si el nombre de usuario ya existe
         IF EXISTS (SELECT 1 FROM Acceso WHERE nombreUsuario = @nombreUsuario)
         BEGIN
             SET @resultado = 409;
@@ -37,7 +35,6 @@ BEGIN
             RETURN;
         END
         
-        -- Insertar en la tabla Acceso
         DECLARE @idAcceso INT;
         
         INSERT INTO Acceso (correo, contrasenia, nombreUsuario, estado, tipoAcceso)
@@ -121,69 +118,64 @@ BEGIN
 END
 GO
 
--- Procedimiento almacenado para verificar credenciales
-CREATE OR ALTER PROCEDURE sps_VerificarCredenciales
-    @nombreUsuario NVARCHAR(15),
+
+-- Login
+CREATE OR ALTER PROCEDURE spi_VerificarCredenciales
+    @identifier NVARCHAR(256),      
     @contrasenia NVARCHAR(300),
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT,
-    @idAcceso INT OUTPUT,
     @idUsuarioRegistrado INT OUTPUT,
-    @tipoAcceso NVARCHAR(20) OUTPUT
+    @nombre NVARCHAR(30) OUTPUT,
+    @fotoPerfil NVARCHAR(MAX) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
     BEGIN TRY
-        -- Verificar si existe el nombre de usuario
-        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE nombreUsuario = @nombreUsuario)
+        DECLARE @idAcceso INT
+        DECLARE @estado NVARCHAR(10)
+        
+        IF @identifier LIKE '%_@_%.__%'
         BEGIN
-            SET @resultado = 401;
-            SET @mensaje = 'El nombre de usuario no existe.';
-            RETURN;
+            SELECT @idAcceso = idAcceso, @estado = estado
+            FROM Acceso
+            WHERE correo = @identifier AND contrasenia = @contrasenia
+        END
+        ELSE
+        BEGIN
+            SELECT @idAcceso = idAcceso, @estado = estado
+            FROM Acceso
+            WHERE nombreUsuario = @identifier AND contrasenia = @contrasenia
         END
         
-        -- Verificar la contraseña
-        DECLARE @idAccesoTemp INT;
+        IF @idAcceso IS NULL
+        BEGIN
+            SET @resultado = 401; -- 401 Unauthorized
+            SET @mensaje = 'Credenciales incorrectas'
+            RETURN
+        END
+        
+        IF @estado != 'Activo'
+        BEGIN
+            SET @resultado = 403; -- 403 Forbidden
+            SET @mensaje = 'La cuenta no está activa'
+            RETURN
+        END
+        
         SELECT 
-            @idAccesoTemp = idAcceso,
-            @tipoAcceso = tipoAcceso
-        FROM Acceso 
-        WHERE nombreUsuario = @nombreUsuario AND contrasenia = @contrasenia;
+            @idUsuarioRegistrado = ur.idUsuarioRegistrado,
+            @nombre = ur.nombre,
+            @fotoPerfil = ur.fotoPerfil
+        FROM UsuarioRegistrado ur
+        WHERE ur.idAcceso = @idAcceso
         
-        IF @idAccesoTemp IS NULL
-        BEGIN
-            SET @resultado = 401;
-            SET @mensaje = 'Contraseña incorrecta.';
-            RETURN;
-        END
-        
-        -- Verificar el estado de la cuenta
-        DECLARE @estadoCuenta NVARCHAR(10);
-        SELECT @estadoCuenta = estado FROM Acceso WHERE idAcceso = @idAccesoTemp;
-        
-        IF @estadoCuenta <> 'Activo'
-        BEGIN
-            SET @resultado = 403;
-            SET @mensaje = 'La cuenta no está activa.';
-            RETURN;
-        END
-        
-        -- Obtener el ID del usuario registrado
-        SELECT @idUsuarioRegistrado = idUsuarioRegistrado 
-        FROM UsuarioRegistrado 
-        WHERE idAcceso = @idAccesoTemp;
-        
-        -- Establecer valores de salida
-        SET @idAcceso = @idAccesoTemp;
-        SET @resultado = 200;
-        SET @mensaje = 'Inicio de sesión exitoso.';
+        SET @resultado = 200; -- 200 OK
+        SET @mensaje = 'Inicio de sesión exitoso'
     END TRY
     BEGIN CATCH
-        SET @resultado = 500;
-        SET @mensaje = 'Error al verificar credenciales: ' + ERROR_MESSAGE();
-        SET @idAcceso = NULL;
-        SET @idUsuarioRegistrado = NULL;
-        SET @tipoAcceso = NULL;
-    END CATCH;
-END;
+        SET @resultado = 500; -- 500 Internal Server Error
+        SET @mensaje = 'Error al verificar credenciales: ' + ERROR_MESSAGE()
+    END CATCH
+END
 GO
