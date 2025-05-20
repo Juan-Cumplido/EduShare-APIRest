@@ -2,7 +2,7 @@ import sql from 'mssql';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatos } from '../../utilidades/Constantes.js';
+import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatosInfoAdicional } from '../../utilidades/Constantes.js';
 
 export class ModeloAcceso {
 
@@ -22,7 +22,7 @@ export class ModeloAcceso {
                 primerApellido,
                 segundoApellido,
                 fotoPerfil,    
-                idInstitucion = 1  // Valor predeterminado para pruebas
+                idInstitucion,
             } = datos;
 
             let fotoPerfilBuffer
@@ -30,8 +30,9 @@ export class ModeloAcceso {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
                     fotoPerfilBuffer = await fs.readFile(defaultImagePath);
+                    fotoPerfilBase64 = `data:image/jpeg;base64,${fotoPerfilBuffer.toString('base64')}`
                 } catch (error) {
-                    console.error('Error al cargar imagen por defecto:', error);
+                    console.log('Error al cargar imagen por defecto:', error);
                     fotoPerfilBuffer = null; 
                 }
             } else {
@@ -67,35 +68,105 @@ export class ModeloAcceso {
         return resultadoInsercion;
     }
 
-    static async RecuperarContraseña({datos}){
+    static async RecuperarContrasena({ correo }) {
         let resultadoRecuperacion;
         const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion
+        let conexion;
         try {
             conexion = await sql.connect(ConfiguracionConexion);
-
-            const {
-                correo,
-            } = datos;
-            
+                
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud 
                 .input('correo', sql.NVarChar(256), correo)
-
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
+                .execute('spi_RecuperarContraseñaCorreo');
 
-                .execute('spi_RecuperarContraseñaCorreo')
-
-            resultadoRecuperacion =  MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intenterar recuperar la contraseña con el correo: ${error.message}`)
-            //logger({ mensaje: `Error al intenterar recuperar la contraseña con el correo: ${error.message}` });
+            console.log(`Error al intentar recuperar la contraseña con el correo: ${error.message}`);
+            logger({ mensaje: `Error al intentar recuperar la contraseña con el correo: ${error.message}` });
         } finally {
             if (conexion) {
                 await sql.close();
             }
         }
-         return resultadoRecuperacion;
+        return resultadoRecuperacion;
+    }
+
+    static async CambiarContrasena({ datos }) {
+        let resultadoCambio;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+
+            const {
+                correo,
+                nuevaContrasenia
+            } = datos;
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('correo', sql.NVarChar(256), correo)
+                .input('nuevaContrasenia', sql.NVarChar(300), nuevaContrasenia)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_CambiarContrasena');
+
+            resultadoCambio = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error) {
+            console.log(`Error al intentar cambiar la contraseña: ${error.message}`)
+            logger({ mensaje: `Error al intentar cambiar la contraseña: ${error.message}` });
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoCambio;
+    }
+    
+    static async VerificarCredenciales({ datos }) {
+    let resultadoVerificacion;
+    const ConfiguracionConexion = RetornarTipoDeConexion();
+    let conexion;
+    try {
+        conexion = await sql.connect(ConfiguracionConexion);
+        const {
+            identifier,
+            contrasenia
+        } = datos;
+            
+        const Solicitud = conexion.request();
+        const ResultadoSolicitud = await Solicitud 
+            .input('identifier', sql.NVarChar(256), identifier)
+            .input('contrasenia', sql.NVarChar(300), contrasenia)
+            .output('resultado', sql.Int)
+            .output('mensaje', sql.NVarChar(200))
+            .output('idUsuarioRegistrado', sql.Int)
+            .output('nombre', sql.NVarChar(30))
+            .output('fotoPerfil', sql.NVarChar(sql.MAX))
+            .execute('spi_VerificarCredenciales');
+
+        resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
+            datos: {
+                resultado: ResultadoSolicitud.output.resultado,
+                mensaje: ResultadoSolicitud.output.mensaje,
+                datosAdicionales: {
+                    idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
+                    nombre: ResultadoSolicitud.output.nombre || null, 
+                    fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+                }
+            }
+        });
+    } catch (error) {
+        console.log(`Error al verificar credenciales: ${error.message}`);
+        logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
+    } finally {
+        if (conexion) {
+            await sql.close();
+        }
+    }
+    return resultadoVerificacion;
     }
 }

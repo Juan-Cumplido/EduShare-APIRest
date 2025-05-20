@@ -1,4 +1,4 @@
-import express, { json } from 'express';
+import express, { json, urlencoded } from 'express';
 import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
 import { CrearRutaPublicacion } from './api_rest/routes/Publicaciones.js';
 
@@ -14,7 +14,8 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicaciones}) =>
 {
     const app = express();
     dotenv.config();
-    app.use(json());
+    app.use(json({limit:'100mb'}));
+    app.use(urlencoded({limit:'100mb', extended:true}))
     app.use(cors());
     app.disable('x-powered-by');
 
