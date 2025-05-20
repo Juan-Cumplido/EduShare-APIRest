@@ -26,17 +26,19 @@ export class ModeloAcceso {
             } = datos;
 
             let fotoPerfilBuffer
+            let fotoPerfilBase64
+            
             if (!fotoPerfil) {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
                     fotoPerfilBuffer = await fs.readFile(defaultImagePath);
-                    fotoPerfilBase64 = `data:image/jpeg;base64,${fotoPerfilBuffer.toString('base64')}`
+                    fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
                 } catch (error) {
                     console.log('Error al cargar imagen por defecto:', error);
-                    fotoPerfilBuffer = null; 
+                    fotoPerfilBase64 = null; 
                 }
             } else {
-                fotoPerfilBuffer = fotoPerfil;
+                fotoPerfilBase64 = fotoPerfil.toString('base64');;
             }
 
             const Solicitud = conexion.request();
@@ -49,7 +51,7 @@ export class ModeloAcceso {
                 .input('nombre', sql.NVarChar(30), nombre)
                 .input('primerApellido', sql.NVarChar(30), primerApellido)
                 .input('segundoApellido', sql.NVarChar(30), segundoApellido)
-                .input('fotoPerfil', sql.VarBinary(sql.MAX), fotoPerfilBuffer)
+                .input('fotoPerfil', sql.NVarChar(sql.MAX), fotoPerfilBase64)
                 .input('idInstitucion', sql.Int, idInstitucion)
 
                 .output('resultado', sql.Int)
