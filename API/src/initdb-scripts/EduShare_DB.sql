@@ -33,7 +33,7 @@ CREATE TABLE UsuarioRegistrado (
     segundoApellido NVARCHAR(30) NULL,
     idAcceso INT NOT NULL,
     idInstitucion INT NOT NULL,
-    fotoPerfil VARBINARY(MAX) NULL,
+    fotoPerfil NVARCHAR(MAX) NULL,
     FOREIGN KEY (idAcceso) REFERENCES Acceso(idAcceso),
     FOREIGN KEY (idInstitucion) REFERENCES Institucion(idInstitucion)
 );

@@ -20,3 +20,9 @@ export function MensajeDeRetornoBaseDeDatosAcceso({datos})
     return {resultado, mensaje};
 }
 
+export function MensajeDeRetornoBaseDeDatosInfoAdicional({datos})
+{
+    const { resultado, mensaje, datosAdicionales } = datos;
+    return {resultado, mensaje, datosAdicionales};
+}
+
