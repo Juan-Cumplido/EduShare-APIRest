@@ -1,8 +1,8 @@
 import sql from 'mssql';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatosInfoAdicional } from '../../utilidades/Constantes.js';
+import { RetornarTipoDeConexion } from './sql/connection/ConfiguracionConexion.js';
+import { MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatosInfoAdicional } from '../utilidades/Constantes.js';
 
 export class ModeloAcceso {
 
@@ -25,13 +25,12 @@ export class ModeloAcceso {
                 idInstitucion,
             } = datos;
 
-            let fotoPerfilBuffer
             let fotoPerfilBase64
             
             if (!fotoPerfil) {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
-                    fotoPerfilBuffer = await fs.readFile(defaultImagePath);
+                    const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
                     fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
                 } catch (error) {
                     console.log('Error al cargar imagen por defecto:', error);
@@ -129,46 +128,77 @@ export class ModeloAcceso {
     }
     
     static async VerificarCredenciales({ datos }) {
-    let resultadoVerificacion;
-    const ConfiguracionConexion = RetornarTipoDeConexion();
-    let conexion;
-    try {
-        conexion = await sql.connect(ConfiguracionConexion);
-        const {
-            identifier,
-            contrasenia
-        } = datos;
-            
-        const Solicitud = conexion.request();
-        const ResultadoSolicitud = await Solicitud 
-            .input('identifier', sql.NVarChar(256), identifier)
-            .input('contrasenia', sql.NVarChar(300), contrasenia)
-            .output('resultado', sql.Int)
-            .output('mensaje', sql.NVarChar(200))
-            .output('idUsuarioRegistrado', sql.Int)
-            .output('nombre', sql.NVarChar(30))
-            .output('fotoPerfil', sql.NVarChar(sql.MAX))
-            .execute('spi_VerificarCredenciales');
+        let resultadoVerificacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                identifier,
+                contrasenia
+            } = datos;
+                
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('identifier', sql.NVarChar(256), identifier)
+                .input('contrasenia', sql.NVarChar(300), contrasenia)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .output('idUsuarioRegistrado', sql.Int)
+                .output('nombre', sql.NVarChar(30))
+                .output('fotoPerfil', sql.NVarChar(sql.MAX))
+                .execute('spi_VerificarCredenciales');
 
-        resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
-            datos: {
-                resultado: ResultadoSolicitud.output.resultado,
-                mensaje: ResultadoSolicitud.output.mensaje,
-                datosAdicionales: {
-                    idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
-                    nombre: ResultadoSolicitud.output.nombre || null, 
-                    fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+            resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
+                datos: {
+                    resultado: ResultadoSolicitud.output.resultado,
+                    mensaje: ResultadoSolicitud.output.mensaje,
+                    datosAdicionales: {
+                        idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
+                        nombre: ResultadoSolicitud.output.nombre || null, 
+                        fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+                    }
                 }
+            });
+        } catch (error) {
+            console.log(`Error al verificar credenciales: ${error.message}`);
+            logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
+        } finally {
+            if (conexion) {
+                await sql.close();
             }
-        });
-    } catch (error) {
-        console.log(`Error al verificar credenciales: ${error.message}`);
-        logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
-    } finally {
-        if (conexion) {
-            await sql.close();
         }
+        return resultadoVerificacion;
     }
-    return resultadoVerificacion;
-    }
+
+    static async EliminarCuenta({ datos }) {
+        let resultadoEliminacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                correo,
+                contrasenia
+            } = datos;
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('correo', sql.NVarChar(256), correo)
+                .input('contrasenia', sql.NVarChar(300), contrasenia)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_EliminarCuenta');
+
+            resultadoEliminacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error) {
+            console.log(`Error al intentar eliminar la cuenta: ${error.message}`);
+            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error.message}` });
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoEliminacion;
+    }   
 }
