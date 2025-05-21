@@ -17,8 +17,7 @@ const CuentaEsquema = zod.object(
     
     fotoPerfil: zod.string().regex(SoloBase64, { message: 'La foto de perfil debe estar en formato Base64 válido' }).optional(),
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
-}
-)
+});
 
 const CorreoEsquema = zod.object({
   correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
@@ -38,6 +37,11 @@ const InicioSesionEsquema = zod.object({
         { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
 });
 
+const CuentaEliminaciónEsquema = zod.object({
+  correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
+    'El correo es demasiado grande. Max 256'),
+  contrasenia: zod.string({ invalid_type_error: 'La contraseña ingresado no es válido',required_error: 'La contraseña es un campo requerido'}).min(8).max(300),
+});
 
 const ContraseñaNuevaEsquema = zod.object({
     correo: zod.string().email({ message: "Formato de correo electrónico inválido" }),
@@ -61,6 +65,11 @@ const CuentaEsquemaEdicion = zod.object(
     tipoDeUsuario: zod.string({ invalid_type_error: 'El tipo de acceso ingresado no es válido'}).min(7).max(13).regex(SoloLetras)
 }
 )
+
+
+export function ValidarEliminacionCuenta(entrada) {
+  return CuentaEliminaciónEsquema.safeParse(entrada);
+}
 
 export function ValidarCredenciales(entrada) {
     return InicioSesionEsquema.safeParse(entrada);

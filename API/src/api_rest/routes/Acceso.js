@@ -164,6 +164,8 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
      */ 
     router.post('/login', ControladorAcceso.VerificarCredenciales);
 
+    router.post('/eliminar', ControladorAcceso.EliminarCuenta);
+
     /**
      * @swagger
      * /edushare/acceso:
