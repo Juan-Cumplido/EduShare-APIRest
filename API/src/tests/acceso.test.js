@@ -7,6 +7,7 @@ let app;
 let codigoRecuperacion;
 const correoRecuperacionPrueba = "zS22013636@estudiantes.uv.mx"
 const contraseñaCorreoPrueba = "PasswordSeguro123!"
+const codigoIncorrecto = "123456"
 
 beforeAll(async () => {
     const { app: appCreada, server: servidorCreado } = CrearServidorTest({
@@ -65,9 +66,6 @@ describe('Test de cuenta de acceso', () => {
             .set("content-type", "application/json")
             .send(datos);
 
-        console.log("Respuesta del servidor:", res.body);
-        console.log("Estado de la respuesta:", res.statusCode);
-
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual({
             error: false,
@@ -75,6 +73,7 @@ describe('Test de cuenta de acceso', () => {
             mensaje: 'Cuenta creada exitosamente.'
         });
     });
+
     test('POST /recuperarContraseña - Se envía un código de recuperación al correo', async() => {
         const datos = {
             correo: correoRecuperacionPrueba
@@ -83,9 +82,6 @@ describe('Test de cuenta de acceso', () => {
         const res = await request(app)
             .post("/edushare/acceso/recuperarContrasena")
             .send(datos);
-        
-        console.log("Respuesta del servidor", res.body);
-        console.log("Estado de la resputa", res.statusCode);
 
         expect(res.body).toEqual(expect.objectContaining({
             error: false,
@@ -94,5 +90,87 @@ describe('Test de cuenta de acceso', () => {
         }));
 
         codigoRecuperacion = res.body.codigo
-    })
+    });
+
+    test('POST /verificarCodigoYCambiarContrasena - Verificar código y cambiar contraseña', async () => {
+        const datosCambio = {
+            correo: correoRecuperacionPrueba,
+            codigo: String(codigoRecuperacion),
+            nuevaContrasenia: "NuevoPassword123!"
+        };
+        
+        const resCambio = await request(app)
+            .post("/edushare/acceso/verificarCodigoYCambiarContrasena")
+            .send(datosCambio);
+
+        expect(resCambio.statusCode).toBe(200);
+        expect(resCambio.body).toEqual({
+            error: false,
+            estado: 200,
+            mensaje: "La contraseña ha sido actualizada exitosamente"
+        });
+    });
+
+    test('POST /verificarCodigoYCambiarContrasena - Código incorrecto', async () => {
+        const datosRecuperacion = {
+            correo: correoRecuperacionPrueba
+        };
+
+        await request(app)
+            .post("/edushare/acceso/recuperarContrasena")
+            .send(datosRecuperacion);
+        
+        const datosCambio = {
+            correo: correoRecuperacionPrueba,
+            codigo: codigoIncorrecto,
+            nuevaContrasenia: "NuevoPassword456!"
+        };
+        
+        const res = await request(app)
+            .post("/edushare/acceso/verificarCodigoYCambiarContrasena")
+            .send(datosCambio);
+        
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual({
+            error: true,
+            estado: 400,
+            mensaje: "El código de verificación es incorrecto"
+        });
+    });
+
+    test('POST /verificarCodigoYCambiarContrasena - Correo no existente', async () => {
+        const datosCambio = {
+            correo: "correo_inexistente@test.com",
+            codigo: "123456",
+            nuevaContrasenia: "NuevoPassword789!"
+        };
+        
+        const res = await request(app)
+            .post("/edushare/acceso/verificarCodigoYCambiarContrasena")
+            .send(datosCambio);
+        
+        expect(res.statusCode).toBe(404);
+        expect(res.body).toEqual({
+            error: true,
+            estado: 404,
+            mensaje: "No hay una solicitud de recuperación para este correo o ha expirado"
+        });
+    });
+
+    test('POST /verificarCodigoYCambiarContrasena - Datos inválidos', async () => {
+        const datosCambio = {
+            correo: "correo_invalido",
+            codigo: "123",  
+            nuevaContrasenia: "corta" 
+        };
+        
+        const res = await request(app)
+            .post("/edushare/acceso/verificarCodigoYCambiarContrasena")
+            .send(datosCambio);
+        
+        expect(res.statusCode).toBe(400);
+        expect(res.body.error).toBe(true);
+        expect(res.body.estado).toBe(400);
+        expect(res.body.mensaje).toBeDefined();
+    });
 });
