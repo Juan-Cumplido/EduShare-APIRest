@@ -1,4 +1,4 @@
-import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta } from "../schemas/Acceso.js";
+import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta, ValidarBaneo} from "../schemas/Acceso.js";
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
@@ -278,4 +278,50 @@ export class AccesoControlador
             });
         }
     }   
+
+    BanearUsuario = async (req, res) => {
+        try{
+            console.log('⚡ Body recibido:', JSON.stringify(req.body));
+            const ResultadoValidacion = ValidarBaneo(req.body);
+            console.log('⚡ Resultado validación:', JSON.stringify(ResultadoValidacion));
+            if (!ResultadoValidacion.success){
+                console.log('⚡ Error validación:', JSON.stringify(ResultadoValidacion.error));
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }   
+
+            console.log('⚡ Datos validados correctamente:', JSON.stringify(ResultadoValidacion.data));
+            const resultado = await this.modeloAcceso.BanearUsuario({
+                datos: ResultadoValidacion.data
+            })
+
+            console.log('⚡ Resultado BD:', JSON.stringify(resultado));
+
+            let codigoResultado = parseInt(resultado.resultado);
+            console.log('⚡ Código resultado:', codigoResultado);
+
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: resultado.mensaje
+                });
+            }
+
+            return res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: resultado.mensaje
+            });
+        } catch (error){
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar banear al usuario"
+            });
+        }
+    }
 }

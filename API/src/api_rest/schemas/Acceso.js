@@ -24,8 +24,6 @@ const CorreoEsquema = zod.object({
     'El correo es demasiado grande. Max 256')
 });
 
-
-
 const InicioSesionEsquema = zod.object({
     identifier: zod.string()
         .min(1)
@@ -54,8 +52,6 @@ const ContraseñaNuevaEsquema = zod.object({
         .regex(/[^A-Za-z0-9]/, { message: "La contraseña debe tener al menos un carácter especial" })
 });
 
-
-
 const CuentaEsquemaEdicion = zod.object(
 {
     idAcceso: zod.number({ invalid_type_error: 'El idAcceso ingresado no es válido',required_error: 'El idAcceso es un campo requerido'}).int().positive(),
@@ -66,6 +62,24 @@ const CuentaEsquemaEdicion = zod.object(
 }
 )
 
+const BaneoEsquema = zod.object({
+  idUsuarioRegistrado: zod.number().int({ invalid_type_error: 'El id usuario no es válido', required_error: 'El idUsuario es un campo requerido'}).positive(),
+  idAdministrador: zod.number().int({ invalid_type_error: 'El id administrador no es válido', required_error: 'El administrador es un campo requerido'}).positive(),
+}
+)
+
+const DesbaneoEsquema = zod.object(
+{
+    idUsuarioRegistrado: zod.number().int({ invalid_type_error: 'El id usuario no es válido',required_error: 'El idUsuario es un campo requerido'}).positive(),
+    idAdministrador: zod.number().int({ invalid_type_error: 'El id administrador no es válido',required_error: 'El administrador es un campo requerido'}).positive(),
+}
+)
+
+export function ValidarBaneo(entrada){
+    const resultado = BaneoEsquema.safeParse(entrada);
+    console.log('⚡ Resultado ValidarBaneo:', JSON.stringify(resultado, null, 2));
+    return resultado;
+}
 
 export function ValidarEliminacionCuenta(entrada) {
   return CuentaEliminaciónEsquema.safeParse(entrada);
@@ -78,7 +92,7 @@ export function ValidarCredenciales(entrada) {
 
 export function ValidarCambioContraseña(entrada){
     return ContraseñaNuevaEsquema.safeParse(entrada)
-}
+}   
 
 export function ValidarCorreo(entrada){
   return CorreoEsquema.safeParse(entrada)

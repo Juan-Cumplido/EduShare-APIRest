@@ -33,7 +33,6 @@ export class ModeloAcceso {
                     const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
                     fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
                 } catch (error) {
-                    console.log('Error al cargar imagen por defecto:', error);
                     fotoPerfilBase64 = null; 
                 }
             } else {
@@ -59,8 +58,7 @@ export class ModeloAcceso {
 
             resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error en InsertarNuevaCuenta: ${error.message}`)
-            //logger({ mensaje: `Error en InsertarNuevaCuenta: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -85,8 +83,7 @@ export class ModeloAcceso {
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar recuperar la contraseña con el correo: ${error.message}`);
-            logger({ mensaje: `Error al intentar recuperar la contraseña con el correo: ${error.message}` });
+            throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -117,8 +114,7 @@ export class ModeloAcceso {
 
             resultadoCambio = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar cambiar la contraseña: ${error.message}`)
-            logger({ mensaje: `Error al intentar cambiar la contraseña: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -161,8 +157,7 @@ export class ModeloAcceso {
                 }
             });
         } catch (error) {
-            console.log(`Error al verificar credenciales: ${error.message}`);
-            logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -192,8 +187,7 @@ export class ModeloAcceso {
 
             resultadoEliminacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar eliminar la cuenta: ${error.message}`);
-            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -201,4 +195,36 @@ export class ModeloAcceso {
         }
         return resultadoEliminacion;
     }   
+
+    static async BanearUsuario({datos}){
+        let resultadoBaneo;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+
+            const {
+                idUsuarioRegistrado,
+                idAdministrador
+            } = datos;
+
+            const Solicitud = conexion.request();
+
+            const ResultadoSolicitud = await Solicitud 
+                .input('idUsuario', sql.Int, idUsuarioRegistrado)
+                .input('idAdministrador', sql.Int, idAdministrador)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_BanearUsuario');
+                
+            resultadoBaneo = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error){
+             throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoBaneo;
+    }
 }

@@ -154,13 +154,10 @@ BEGIN
         
         DELETE FROM Publicacion WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
         
-        -- Eliminar documentos asociados a las publicaciones
         DELETE FROM Documento WHERE idDocumento IN (SELECT idDocumento FROM @documentosAEliminar);
         
-        -- Eliminar el usuario registrado
         DELETE FROM UsuarioRegistrado WHERE idAcceso = @idAcceso;
         
-        -- Eliminar el acceso
         DELETE FROM Acceso WHERE idAcceso = @idAcceso;
         
         COMMIT TRANSACTION;
@@ -175,4 +172,126 @@ BEGIN
         SET @mensaje = 'Error al eliminar la cuenta: ' + ERROR_MESSAGE();
     END CATCH;
 END;
+GO
+
+-----------------Banear usuario----
+CREATE OR ALTER PROCEDURE spi_BanearUsuario
+    @idUsuario INT,
+    @idAdministrador INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT 
+AS
+BEGIN 
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+            IF NOT EXISTS (SELECT 1 FROM Acceso WHERE idAcceso = @idAdministrador AND tipoAcceso = 'Administrador')
+            BEGIN
+                SET @resultado = 403;
+                SET @mensaje = 'No tiene permisos para realizar esta acción.';
+                ROLLBACK TRANSACTION;
+            RETURN;
+            END
+
+            IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
+            BEGIN
+                SET @resultado = 404;
+                SET @mensaje = 'El usuario especificado no existe.';
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+        DECLARE @idAcceso INT;
+        SELECT @idAcceso = idAcceso FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario;
+
+        IF EXISTS (SELECT 1 FROM Acceso WHERE idAcceso = @idAcceso AND estado = 'Baneado')
+        BEGIN
+            SET @resultado = 409;
+            SET @mensaje = 'El usuario ya se encuentra baneado.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        UPDATE Acceso 
+        SET estado = 'Baneado'
+        WHERE idAcceso = @idAcceso;
+
+        COMMIT TRANSACTION;
+        SET @resultado = 200;
+        SET @mensaje = 'Usuario baneado exitosamente.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        SET @resultado = 500;
+        SET @mensaje = 'Error al banear al usuario: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- Procedimiento almacenado para desbanear un usuario
+CREATE OR ALTER PROCEDURE spi_DesbanearUsuario
+    @idUsuario INT,
+    @idAdministrador INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El usuario especificado no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        DECLARE @idAcceso INT;
+        SELECT @idAcceso = idAcceso FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario;
+        
+        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE idAcceso = @idAcceso AND estado = 'Baneado')
+        BEGIN
+            SET @resultado = 409;
+            SET @mensaje = 'El usuario no se encuentra baneado actualmente.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+    
+        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE idAcceso = @idAdministrador AND tipoAcceso = 'Administrador')
+        BEGIN
+            SET @resultado = 403;
+            SET @mensaje = 'No tiene permisos para realizar esta acción.';
+            ROLLBACK TRANSACTION;
+        RETURN;
+        END
+        
+        UPDATE Acceso 
+        SET estado = 'Activo'
+        WHERE idAcceso = @idAcceso;
+        
+        COMMIT TRANSACTION;
+        SET @resultado = 200;
+        SET @mensaje = 'Usuario desbaneado exitosamente.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 500;
+        SET @mensaje = 'Error al desbanear al usuario: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- Modificar la tabla BaneoUsuario para incluir información de desbaneo
+IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('BaneoUsuario') AND name = 'fechaDesbaneo')
+BEGIN
+    ALTER TABLE BaneoUsuario
+    ADD fechaDesbaneo DATETIME NULL,
+        idAdministradorDesbaneo INT NULL;
+END
 GO
