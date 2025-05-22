@@ -273,7 +273,7 @@ BEGIN
         SET estado = 'Activo'
         WHERE idAcceso = @idAcceso;
         
-        COMMIT TRANSACTION;
+        COMMIT TRANSACTION; 
         SET @resultado = 200;
         SET @mensaje = 'Usuario desbaneado exitosamente.';
     END TRY
@@ -285,13 +285,4 @@ BEGIN
         SET @mensaje = 'Error al desbanear al usuario: ' + ERROR_MESSAGE();
     END CATCH;
 END;
-GO
-
--- Modificar la tabla BaneoUsuario para incluir información de desbaneo
-IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('BaneoUsuario') AND name = 'fechaDesbaneo')
-BEGIN
-    ALTER TABLE BaneoUsuario
-    ADD fechaDesbaneo DATETIME NULL,
-        idAdministradorDesbaneo INT NULL;
-END
 GO

@@ -127,9 +127,9 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
     router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena);
 
 
-            /**
+     /**
      * @swagger
-     * /edushare/acceso/VerificarCredenciales:
+     * /edushare/acceso/login:
      *   post:
      *     summary: Permite loguear al usuario
      *     tags: [Acceso]
@@ -140,25 +140,46 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
      *           schema:
      *             type: object
      *             required:
-     *               - nombreUsuario
-     *               - correo
-     *               - contraseña
+     *               - identifier
+     *               - contrasenia
      *             properties:
-     *               correo:
+     *               identifier:
      *                 type: string
-     *                 format: email
-     *               nombreUsuario:
-     *                 type: string
-     *               contraseña:
+     *                 description: Correo electrónico o nombre de usuario
+     *               contrasenia:
      *                 type: string
      *                 minLength: 8
      *     responses:
      *       200:
      *         description: Credenciales correctas
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: boolean
+     *                 estado:
+     *                   type: integer
+     *                 mensaje:
+     *                   type: string
+     *                 token:
+     *                   type: string
+     *                 datos:
+     *                   type: object
+     *                   properties:
+     *                     idUsuario:
+     *                       type: integer
+     *                     nombre:
+     *                       type: string
+     *                     fotoPerfil:
+     *                       type: string
      *       400:
-     *         description: Código incorrecto o formato inválido
-     *       404:
-     *         description: No existe un usuario con esas credenciales
+     *         description: Datos de entrada inválidos
+     *       401:
+     *         description: Credenciales incorrectas
+     *       403:
+     *         description: Cuenta no activa
      *       500:
      *         description: Error del servidor
      */ 
@@ -166,27 +187,7 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
 
     router.post('/eliminar', ControladorAcceso.EliminarCuenta);
 
-    router.post('/banearUsuario', ControladorAcceso.BanearUsuario)
-
-    /**
-     * @swagger
-     * /edushare/acceso:
-     *   get:
-     *     summary: Obtiene información sobre las opciones de acceso
-     *     tags: [Acceso]
-     *     responses:
-     *       200:
-     *         description: Información obtenida correctamente
-     */
-    router.get('/', (req, res) => {
-        res.status(200).json({
-            mensaje: "API de acceso",
-            endpoints: [
-                { ruta: "/registro", metodo: "POST", descripcion: "Registro de nuevos usuarios" },
-                { ruta: "/login", metodo: "POST", descripcion: "Inicio de sesión" }
-            ]
-        });
-    });
+    router.post('/banearUsuario', ValidarJwt, ControladorAcceso.BanearUsuario)
 
     return router;
 }

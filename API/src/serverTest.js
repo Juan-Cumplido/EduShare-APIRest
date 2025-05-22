@@ -15,7 +15,6 @@ export const CrearServidorTest = ({ModeloAcceso}) => {
         res.json({message: 'Bienvenido al servidor de pruebas de EduShare-API'});
     });
 
-
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
 
 

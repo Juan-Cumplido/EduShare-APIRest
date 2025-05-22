@@ -218,16 +218,32 @@ export class AccesoControlador
                 });
             }
 
-            return res.status(200).json({
-                error: false,
-                estado: 200,
-                mensaje: resultado.mensaje,
-                datos: {
-                    idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
-                    nombre: resultado.datosAdicionales.nombre,
-                    fotoPerfil: resultado.datosAdicionales.fotoPerfil
-                }
-            });
+            try {
+                const payloadJWT = { 
+                    idUsuario: resultado.datosAdicionales.idUsuarioRegistrado 
+                };
+                
+                const token = await GenerarJWT(payloadJWT);
+                
+                return res.status(200).json({
+                    error: false,
+                    estado: 200,
+                    mensaje: resultado.mensaje,
+                    token: token, // Incluir el token en la respuesta
+                    datos: {
+                        idUsuario: resultado.datosAdicionales.idUsuarioRegistrado,
+                        nombre: resultado.datosAdicionales.nombre,
+                        fotoPerfil: resultado.datosAdicionales.fotoPerfil
+                    }
+                });
+            } catch (errorToken) {
+                logger({ mensaje: `Error al generar JWT: ${errorToken}` });
+                return res.status(500).json({
+                    error: true,
+                    estado: 500,
+                    mensaje: "Error al generar token de autenticación"
+                });
+            }
         } catch (error) {
             logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
             res.status(500).json({
@@ -281,9 +297,7 @@ export class AccesoControlador
 
     BanearUsuario = async (req, res) => {
         try{
-            console.log('⚡ Body recibido:', JSON.stringify(req.body));
             const ResultadoValidacion = ValidarBaneo(req.body);
-            console.log('⚡ Resultado validación:', JSON.stringify(ResultadoValidacion));
             if (!ResultadoValidacion.success){
                 console.log('⚡ Error validación:', JSON.stringify(ResultadoValidacion.error));
                 return res.status(400).json({
@@ -293,16 +307,12 @@ export class AccesoControlador
                 });
             }   
 
-            console.log('⚡ Datos validados correctamente:', JSON.stringify(ResultadoValidacion.data));
             const resultado = await this.modeloAcceso.BanearUsuario({
                 datos: ResultadoValidacion.data
             })
 
-            console.log('⚡ Resultado BD:', JSON.stringify(resultado));
-
             let codigoResultado = parseInt(resultado.resultado);
-            console.log('⚡ Código resultado:', codigoResultado);
-
+            
             if (codigoResultado !== 200) {
                 return res.status(codigoResultado).json({
                     error: true,
@@ -317,6 +327,7 @@ export class AccesoControlador
                 mensaje: resultado.mensaje
             });
         } catch (error){
+            logger({ mensaje: `Error al intentar banear al usuario: ${error}` });
             res.status(500).json({
                 error: true,
                 estado: 500,

@@ -19,16 +19,6 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicaciones}) =>
     app.use(cors());
     app.disable('x-powered-by');
 
-    /**
-     * @swagger
-     * tags:
-     *  name: Welcome
-     *  description: Ruta de bienvenida a la API
-     */
-    app.get('/edushare',(req,res)=>{
-        res.json({message: 'Bienvenido al servidor de EduShare-API'});
-    })
-
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
 
     app.use('/edushare/publicaciones', CrearRutaPublicacion({ModeloPublicaciones}));
