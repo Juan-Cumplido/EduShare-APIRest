@@ -118,4 +118,61 @@ BEGIN
 END
 GO
 
-
+CREATE OR ALTER PROCEDURE spi_EliminarCuenta
+    @correo NVARCHAR(256),
+    @contrasenia NVARCHAR(300),
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        DECLARE @idAcceso INT;
+        DECLARE @idUsuarioRegistrado INT;
+        
+        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo AND contrasenia = @contrasenia)
+        BEGIN
+            SET @resultado = 401;
+            SET @mensaje = 'Credenciales incorrectas.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        SELECT @idAcceso = idAcceso FROM Acceso WHERE correo = @correo;
+        
+        SELECT @idUsuarioRegistrado = idUsuarioRegistrado FROM UsuarioRegistrado WHERE idAcceso = @idAcceso;
+        
+        DELETE FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioRegistrado OR idUsuarioSeguido = @idUsuarioRegistrado;
+        DELETE FROM Comentario WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
+        DELETE FROM AgendaChat WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
+        
+        DECLARE @documentosAEliminar TABLE (idDocumento INT);
+        INSERT INTO @documentosAEliminar
+        SELECT idDocumento FROM Publicacion WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
+        
+        DELETE FROM Publicacion WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
+        
+        -- Eliminar documentos asociados a las publicaciones
+        DELETE FROM Documento WHERE idDocumento IN (SELECT idDocumento FROM @documentosAEliminar);
+        
+        -- Eliminar el usuario registrado
+        DELETE FROM UsuarioRegistrado WHERE idAcceso = @idAcceso;
+        
+        -- Eliminar el acceso
+        DELETE FROM Acceso WHERE idAcceso = @idAcceso;
+        
+        COMMIT TRANSACTION;
+        SET @resultado = 200;
+        SET @mensaje = 'Cuenta eliminada exitosamente.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 500;
+        SET @mensaje = 'Error al eliminar la cuenta: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+GO

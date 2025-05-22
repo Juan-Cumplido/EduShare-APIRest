@@ -1,4 +1,4 @@
-import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo } from "../schemas/Acceso.js";
+import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta } from "../schemas/Acceso.js";
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
@@ -14,6 +14,7 @@ export class AccesoControlador
     RegistrarAcceso = async (req, res) => {
         try {
             const ResultadoValidacion = ValidarInsercionAcceso(req.body);
+
             if (ResultadoValidacion.success) {
                 const ResultadoInsercion = await this.modeloAcceso.InsertarNuevaCuenta({ 
                     datos: ResultadoValidacion.data 
@@ -68,11 +69,6 @@ export class AccesoControlador
                 correo: correo
             });
 
-            //CLASE ESTÁTICA.
-            /*        const ResultadoRecuperacion = await ModeloAcceso.RecuperarContraseña({
-            correo: correo
-            });*/
-
             let codigoResultado = parseInt(ResultadoRecuperacion.resultado); 
         
             if (codigoResultado == 200 ){
@@ -87,12 +83,17 @@ export class AccesoControlador
                  const rutaPlantilla = path.join(process.cwd(), 'resources', 'plantillas', 'recuperacion-contrasena.html');
                  await EnviarCorreoDeVerificacion(rutaPlantilla, correo, codigo.toString());
                 
-                res.status(200).json({
+                const respuesta = {
                     error: false,
                     estado: 200,
-                    mensaje: "Se ha enviado un código de recuperación a tu correo",
-                    codigo: codigo // BORRAR ANTES DE VERSION FINAL. SOLO PARA PRUEBAS
-                });
+                    mensaje: "Se ha enviado un código de recuperación a tu correo"
+                };
+
+                if (process.env.TEST == 'TRUE') {
+                    respuesta.codigo = codigo;
+                }
+
+                res.status(200).json(respuesta);
             } catch (error){
                 logger({ mensaje: `Error al enviar correo de recuperación: ${error.message}` });
                 res.status(500).json({
@@ -191,49 +192,90 @@ export class AccesoControlador
         }
     }
 
-VerificarCredenciales = async (req, res) => {
-    try {
-        const ResultadoValidacion = ValidarCredenciales(req.body);
+    VerificarCredenciales = async (req, res) => {
+        try {
+            const ResultadoValidacion = ValidarCredenciales(req.body);
 
-        if (!ResultadoValidacion.success) {
-            return res.status(400).json({
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
+
+            const resultado = await this.modeloAcceso.VerificarCredenciales({ 
+                datos: ResultadoValidacion.data 
+            });
+
+            let codigoResultado = parseInt(resultado.resultado);
+
+            if (codigoResultado != 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: resultado.mensaje
+                });
+            }
+
+            return res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: resultado.mensaje,
+                datos: {
+                    idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
+                    nombre: resultado.datosAdicionales.nombre,
+                    fotoPerfil: resultado.datosAdicionales.fotoPerfil
+                }
+            });
+        } catch (error) {
+            logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
+            res.status(500).json({
                 error: true,
-                estado: 400,
-                mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar iniciar sesión"
             });
         }
+    }
 
-        const resultado = await this.modeloAcceso.VerificarCredenciales({ 
-            datos: ResultadoValidacion.data 
-        });
+    EliminarCuenta = async (req, res) => {
+        try {
+            const ResultadoValidacion = ValidarEliminacionCuenta(req.body);
 
-        let codigoResultado = parseInt(resultado.resultado);
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
 
-        if (codigoResultado != 200) {
-            return res.status(codigoResultado).json({
-                error: true,
-                estado: codigoResultado,
+            const resultado = await this.modeloAcceso.EliminarCuenta({ 
+                datos: ResultadoValidacion.data 
+            });
+
+            let codigoResultado = parseInt(resultado.resultado);
+
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: resultado.mensaje
+                });
+            }
+
+            return res.status(200).json({
+                error: false,
+                estado: 200,
                 mensaje: resultado.mensaje
             });
-        }
-
-        return res.status(200).json({
-            error: false,
-            estado: 200,
-            mensaje: resultado.mensaje,
-            datos: {
-                idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
-                nombre: resultado.datosAdicionales.nombre,
-                fotoPerfil: resultado.datosAdicionales.fotoPerfil
-            }
-        });
     } catch (error) {
-        logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
-        res.status(500).json({
-            error: true,
-            estado: 500,
-            mensaje: "Ha ocurrido un error al intentar iniciar sesión"
-        });
-    }
-}
+            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar eliminar la cuenta"
+            });
+        }
+    }   
 }
