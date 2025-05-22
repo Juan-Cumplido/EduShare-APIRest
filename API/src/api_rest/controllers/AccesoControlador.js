@@ -1,7 +1,8 @@
-import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta } from "../schemas/Acceso.js";
+import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta, ValidarBaneo} from "../schemas/Acceso.js";
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
+import { GenerarJWT } from "../utilidades/generadorjwt.js";
 
 export class AccesoControlador
 {
@@ -218,16 +219,32 @@ export class AccesoControlador
                 });
             }
 
-            return res.status(200).json({
-                error: false,
-                estado: 200,
-                mensaje: resultado.mensaje,
-                datos: {
-                    idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
-                    nombre: resultado.datosAdicionales.nombre,
-                    fotoPerfil: resultado.datosAdicionales.fotoPerfil
-                }
-            });
+            try {
+                const payloadJWT = { 
+                    idUsuario: resultado.datosAdicionales.idUsuarioRegistrado 
+                };
+                
+                const token = await GenerarJWT(payloadJWT);
+                
+                return res.status(200).json({
+                    error: false,
+                    estado: 200,
+                    mensaje: resultado.mensaje,
+                    token: token, // Incluir el token en la respuesta
+                    datos: {
+                        idUsuario: resultado.datosAdicionales.idUsuarioRegistrado,
+                        nombre: resultado.datosAdicionales.nombre,
+                        fotoPerfil: resultado.datosAdicionales.fotoPerfil
+                    }
+                });
+            } catch (errorToken) {
+                logger({ mensaje: `Error al generar JWT: ${errorToken}` });
+                return res.status(500).json({
+                    error: true,
+                    estado: 500,
+                    mensaje: "Error al generar token de autenticación"
+                });
+            }
         } catch (error) {
             logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
             res.status(500).json({
@@ -278,4 +295,103 @@ export class AccesoControlador
             });
         }
     }   
+
+    BanearUsuario = async (req, res) => {
+        try{
+            const ResultadoValidacion = ValidarBaneo(req.body);
+
+            if (!ResultadoValidacion.success){  
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }   
+
+            const idAdministrador = req.idUsuario; 
+
+            const adminUser = await this.modeloAcceso.VerificarAdmin({ idUsuario: idAdministrador });
+        
+            if (!adminUser || adminUser.tipoAcceso !== 'Administrador') {
+            return res.status(403).json({
+                error: true,
+                estado: 403,
+                mensaje: 'No tiene permisos para realizar esta acción.'
+            });
+        }
+
+            const datosBaneo = {
+                idUsuarioRegistrado: ResultadoValidacion.data.idUsuarioRegistrado,
+                idAdministrador: idAdministrador 
+            };
+
+            const resultado = await this.modeloAcceso.BanearUsuario({
+                datos: datosBaneo
+            })
+
+            let codigoResultado = parseInt(resultado.resultado);
+            
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: resultado.mensaje
+                });
+            }
+
+            return res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: resultado.mensaje
+            });
+        } catch (error){
+            logger({ mensaje: `Error al intentar banear al usuario: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar banear al usuario"
+            });
+        }
+    }
+
+    RegistrarAccesoAdmin = async (req, res) => {
+        try {
+            const ResultadoValidacion = ValidarInsercionAcceso(req.body);
+
+            if (ResultadoValidacion.success) {
+                const ResultadoInsercion = await this.modeloAcceso.InsertarNuevaCuentaAdmin({ 
+                    datos: ResultadoValidacion.data 
+                });
+                
+                let resultadoInsercion = parseInt(ResultadoInsercion.resultado);
+                if (resultadoInsercion === 500) {
+                    logger({ mensaje: ResultadoInsercion.mensaje });
+                    res.status(resultadoInsercion).json({
+                        error: true,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: 'Ha ocurrido un error en la base de datos al querer insertar los datos una nueva cuenta de acceso'
+                    });
+                } else {
+                    res.status(resultadoInsercion).json({
+                        error: resultadoInsercion !== 200,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: ResultadoInsercion.mensaje
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
+        } catch (error) {
+            logger({ mensaje: error });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al querer registrar el Acceso."
+            });
+        }
+    }
 }
