@@ -11,8 +11,8 @@ export const ValidarJwt = (request,response, next) =>
             ? HeaderAutenticacion.split(' ')[1]
             : null;
         if(Token) {
-                const { idUsuario } = jwt.verify(Token,process.env.SECRETO_JWT);
-                request.idUsuario = idUsuario;
+                const payload = jwt.verify(Token,process.env.SECRETO_JWT);
+                request.idUsuario = payload.idUsuario;;
                 next();
         } else {
             response.status(401).json({

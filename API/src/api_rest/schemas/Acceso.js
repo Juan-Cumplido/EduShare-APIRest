@@ -24,17 +24,6 @@ const CorreoEsquema = zod.object({
     'El correo es demasiado grande. Max 256')
 });
 
-const InicioSesionEsquema = zod.object({
-    identifier: zod.string()
-        .min(1)
-        .max(256)
-        .regex(SoloIdentificadores, {
-            message: 'Debe ser un nombre de usuario (solo letras y números) o correo electrónico válido'
-        }),
-    contrasenia: zod.string({invalid_type_error: 'La contraseña ingresada no es válida', required_error: 'La contraseña es un campo requerido'}).min(8, 
-        { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
-});
-
 const CuentaEliminaciónEsquema = zod.object({
   correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
     'El correo es demasiado grande. Max 256'),
@@ -62,31 +51,42 @@ const CuentaEsquemaEdicion = zod.object(
 }
 )
 
+const CuentaAdminEsquema = CuentaEsquema.extend({
+    tipoAcceso: zod.literal('Administrador')
+});
+
 const BaneoEsquema = zod.object({
   idUsuarioRegistrado: zod.number().int({ invalid_type_error: 'El id usuario no es válido', required_error: 'El idUsuario es un campo requerido'}).positive(),
-  idAdministrador: zod.number().int({ invalid_type_error: 'El id administrador no es válido', required_error: 'El administrador es un campo requerido'}).positive(),
 }
 )
 
-const DesbaneoEsquema = zod.object(
-{
-    idUsuarioRegistrado: zod.number().int({ invalid_type_error: 'El id usuario no es válido',required_error: 'El idUsuario es un campo requerido'}).positive(),
-    idAdministrador: zod.number().int({ invalid_type_error: 'El id administrador no es válido',required_error: 'El administrador es un campo requerido'}).positive(),
+const InicioSesionEsquema = zod.object({
+    identifier: zod.string()
+        .min(1)
+        .max(256)
+        .regex(SoloIdentificadores, {
+            message: 'Debe ser un nombre de usuario (solo letras y números) o correo electrónico válido'
+        }),
+    contrasenia: zod.string({invalid_type_error: 'La contraseña ingresada no es válida', required_error: 'La contraseña es un campo requerido'}).min(8, 
+        { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
+});
+
+export function ValidarInsercionAdmin(entrada) {
+    return CuentaAdminEsquema.safeParse(entrada);
 }
-)
 
 export function ValidarBaneo(entrada){
     const resultado = BaneoEsquema.safeParse(entrada);
-    console.log('⚡ Resultado ValidarBaneo:', JSON.stringify(resultado, null, 2));
     return resultado;
+}
+
+
+export function ValidarCredenciales(entrada) {
+    return InicioSesionEsquema.safeParse(entrada);
 }
 
 export function ValidarEliminacionCuenta(entrada) {
   return CuentaEliminaciónEsquema.safeParse(entrada);
-}
-
-export function ValidarCredenciales(entrada) {
-    return InicioSesionEsquema.safeParse(entrada);
 }
 
 

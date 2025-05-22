@@ -2,6 +2,7 @@ import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, 
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
+import { GenerarJWT } from "../utilidades/generadorjwt.js";
 
 export class AccesoControlador
 {
@@ -298,8 +299,8 @@ export class AccesoControlador
     BanearUsuario = async (req, res) => {
         try{
             const ResultadoValidacion = ValidarBaneo(req.body);
-            if (!ResultadoValidacion.success){
-                console.log('⚡ Error validación:', JSON.stringify(ResultadoValidacion.error));
+
+            if (!ResultadoValidacion.success){  
                 return res.status(400).json({
                     error: true,
                     estado: 400,
@@ -307,8 +308,25 @@ export class AccesoControlador
                 });
             }   
 
+            const idAdministrador = req.idUsuario; 
+
+            const adminUser = await this.modeloAcceso.VerificarAdmin({ idUsuario: idAdministrador });
+        
+            if (!adminUser || adminUser.tipoAcceso !== 'Administrador') {
+            return res.status(403).json({
+                error: true,
+                estado: 403,
+                mensaje: 'No tiene permisos para realizar esta acción.'
+            });
+        }
+
+            const datosBaneo = {
+                idUsuarioRegistrado: ResultadoValidacion.data.idUsuarioRegistrado,
+                idAdministrador: idAdministrador 
+            };
+
             const resultado = await this.modeloAcceso.BanearUsuario({
-                datos: ResultadoValidacion.data
+                datos: datosBaneo
             })
 
             let codigoResultado = parseInt(resultado.resultado);
@@ -332,6 +350,47 @@ export class AccesoControlador
                 error: true,
                 estado: 500,
                 mensaje: "Ha ocurrido un error al intentar banear al usuario"
+            });
+        }
+    }
+
+    RegistrarAccesoAdmin = async (req, res) => {
+        try {
+            const ResultadoValidacion = ValidarInsercionAcceso(req.body);
+
+            if (ResultadoValidacion.success) {
+                const ResultadoInsercion = await this.modeloAcceso.InsertarNuevaCuentaAdmin({ 
+                    datos: ResultadoValidacion.data 
+                });
+                
+                let resultadoInsercion = parseInt(ResultadoInsercion.resultado);
+                if (resultadoInsercion === 500) {
+                    logger({ mensaje: ResultadoInsercion.mensaje });
+                    res.status(resultadoInsercion).json({
+                        error: true,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: 'Ha ocurrido un error en la base de datos al querer insertar los datos una nueva cuenta de acceso'
+                    });
+                } else {
+                    res.status(resultadoInsercion).json({
+                        error: resultadoInsercion !== 200,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: ResultadoInsercion.mensaje
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
+        } catch (error) {
+            logger({ mensaje: error });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al querer registrar el Acceso."
             });
         }
     }

@@ -227,4 +227,86 @@ export class ModeloAcceso {
         }
         return resultadoBaneo;
     }
-}
+
+    static async InsertarNuevaCuentaAdmin({ datos }) {
+        let resultadoInsercion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                correo,
+                contrasenia,
+                nombreUsuario, 
+                estado = 'Activo',
+                tipoAcceso = 'Administrador',
+                nombre,
+                primerApellido,
+                segundoApellido,
+                fotoPerfil,    
+                idInstitucion,
+            } = datos;
+
+            let fotoPerfilBase64
+            
+            if (!fotoPerfil) {
+                try {
+                    const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
+                    const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
+                    fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
+                } catch (error) {
+                    fotoPerfilBase64 = null; 
+                }
+            } else {
+                fotoPerfilBase64 = fotoPerfil.toString('base64');;
+            }
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('correo', sql.NVarChar(256), correo)
+                .input('contrasenia', sql.NVarChar(300), contrasenia)
+                .input('nombreUsuario', sql.NVarChar(15), nombreUsuario)
+                .input('estado', sql.NVarChar(10), estado)
+                .input('tipoAcceso', sql.NVarChar(20), tipoAcceso)
+                .input('nombre', sql.NVarChar(30), nombre)
+                .input('primerApellido', sql.NVarChar(30), primerApellido)
+                .input('segundoApellido', sql.NVarChar(30), segundoApellido)
+                .input('fotoPerfil', sql.NVarChar(sql.MAX), fotoPerfilBase64)
+                .input('idInstitucion', sql.Int, idInstitucion)
+
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_InsertarCuentaConUsuarioRegistrado');
+
+            resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error) {
+             throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoInsercion;
+    }
+
+    static async VerificarAdmin({ idUsuario }) {
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('idUsuario', sql.Int, idUsuario)
+                .query('SELECT tipoAcceso FROM Acceso WHERE idAcceso = @idUsuario');
+                
+            return ResultadoSolicitud.recordset[0] || null;
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+    }
+}   
