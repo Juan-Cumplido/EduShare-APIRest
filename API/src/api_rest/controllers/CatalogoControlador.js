@@ -81,6 +81,31 @@ export class CatalogoControlador{
         }
     }
 
+    RecuperarInstituciones = async (req, res) => {
+        try {
+            const { nivel } = req.query; 
+            
+            if (nivel && !['Preparatoria', 'Universidad'].includes(nivel)) {
+                return res.status(400).json({
+                    resultado: 400,
+                    mensaje: 'Nivel educativo no válido. Use "Preparatoria" o "Universidad"'
+                });
+            }
+
+            const resultado = await this.modeloCatalogo.RecuperarInstituciones({ 
+                nivelEducativo: nivel 
+            });
+
+            return res.status(resultado.resultado).json(resultado);
+            
+        } catch (error) {
+            console.error('Error al recuperar instituciones:', error);
+            return res.status(500).json({
+                resultado: 500,
+                mensaje: 'Error interno del servidor'
+            });
+        }
+    }
 
     recuperarMateriasPorRama = async (res, idRama) => {
         const ResultadoValidacion = ValidarRecuperacionCatalogo({ idRama: parseInt(idRama) });
@@ -89,7 +114,7 @@ export class CatalogoControlador{
             return this.responderConError(res, 400, ResultadoValidacion.error.formErrors.fieldErrors)
         }
 
-        const ResultadoRecuperacion = await this.ModeloCatalogo.RecuperarMateriasPorRama({
+        const ResultadoRecuperacion = await this.modeloCatalogo.RecuperarMateriasPorRama({
             idRama: ResultadoValidacion.data.idRama
         });
 

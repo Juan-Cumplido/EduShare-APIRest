@@ -61,30 +61,30 @@ export class ModeloCatalogo {
     }
 
     static async RecuperarMaterias() {
-        let resultadoRecuperacion;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
+        let resultadoRecuperacion
+        const ConfiguracionConexion = RetornarTipoDeConexion()
+        let conexion
         try {
-            conexion = await sql.connect(ConfiguracionConexion);
+            conexion = await sql.connect(ConfiguracionConexion)
             
-            const Solicitud = conexion.request();
+            const Solicitud = conexion.request()
             const ResultadoSolicitud = await Solicitud
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarMaterias');
+                .execute('spi_RecuperarMaterias')
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,
                 recordset: ResultadoSolicitud.recordset
-            });
+            })
         } catch (error) {
-            throw error;
+            throw error
         } finally {
             if (conexion) {
-                await sql.close();
+                await sql.close()
             }
         }
-        return resultadoRecuperacion;
+        return resultadoRecuperacion
     }
 
     static async RecuperarMateriasPorRama({ idRama }) {
@@ -99,7 +99,7 @@ export class ModeloCatalogo {
                 .input('idRama', sql.Int, idRama)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarMateriasPorRama');
+                .execute('spi_RecuperarMateriasPorRama')
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,
@@ -114,5 +114,37 @@ export class ModeloCatalogo {
         }
         return resultadoRecuperacion;
     }
-    
+
+    static async RecuperarInstituciones({ nivelEducativo = null } = {}) {
+    let resultadoRecuperacion;
+    const ConfiguracionConexion = RetornarTipoDeConexion();
+    let conexion;
+
+    try {
+        conexion = await sql.connect(ConfiguracionConexion);
+
+        const Solicitud = conexion.request();
+        
+        if (nivelEducativo) {
+            Solicitud.input('nivelEducativo', sql.NVarChar(20), nivelEducativo);
+        }
+
+        const ResultadoSolicitud = await Solicitud
+            .output('resultado', sql.Int)
+            .output('mensaje', sql.NVarChar(200))
+            .execute('sps_RecuperarInstituciones');
+
+        resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({
+            datos: ResultadoSolicitud.output,
+            recordset: ResultadoSolicitud.recordset
+        });
+    } catch (error) {
+        throw error;
+    } finally {
+        if (conexion) {
+            await sql.close();
+        }
+    }
+    return resultadoRecuperacion;
+    }
 }   

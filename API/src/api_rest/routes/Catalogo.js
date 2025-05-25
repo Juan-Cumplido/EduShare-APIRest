@@ -10,6 +10,8 @@ export const CrearRutaCatalogo = ({ ModeloCatalogo }) => {
     router.get('/ramas', ControladorCatalogo.RecuperarRamas);
 
     router.get('/materias', ControladorCatalogo.RecuperarMaterias)
+
+    router.get('/instituciones', ControladorCatalogo.RecuperarInstituciones)
     
     return router;
 }
