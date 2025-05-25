@@ -73,16 +73,16 @@ export class AccesoControlador
             let codigoResultado = parseInt(ResultadoRecuperacion.resultado); 
         
             if (codigoResultado == 200 ){
-                const codigo = Math.floor(100000 + Math.random() * 900000);
+                const Codigo = Math.floor(100000 + Math.random() * 900000);
 
                 this.codigosRecuperacion.set(correo, {
-                    codigo: codigo.toString(),
+                    codigo: Codigo.toString(),
                     expira: Date.now() + 30 * 60 * 1000 
                 });
 
             try {
                  const rutaPlantilla = path.join(process.cwd(), 'resources', 'plantillas', 'recuperacion-contrasena.html');
-                 await EnviarCorreoDeVerificacion(rutaPlantilla, correo, codigo.toString());
+                 await EnviarCorreoDeVerificacion(rutaPlantilla, correo, Codigo.toString());
                 
                 const respuesta = {
                     error: false,
@@ -91,7 +91,7 @@ export class AccesoControlador
                 };
 
                 if (process.env.TEST == 'TRUE') {
-                    respuesta.codigo = codigo;
+                    respuesta.codigo = Codigo;
                 }
 
                 res.status(200).json(respuesta);
@@ -135,9 +135,9 @@ export class AccesoControlador
 
             const { correo, codigo, nuevaContrasenia } = ResultadoValidacion.data;
             
-            const infoRecuperacion = this.codigosRecuperacion.get(correo);
+            const InfoRecuperacion = this.codigosRecuperacion.get(correo);
             
-            if (!infoRecuperacion) {
+            if (!InfoRecuperacion) {
                 return res.status(404).json({
                     error: true,
                     estado: 404,
@@ -145,7 +145,7 @@ export class AccesoControlador
                 });
             }
             
-            if (Date.now() > infoRecuperacion.expira) {
+            if (Date.now() > InfoRecuperacion.expira) {
                 this.codigosRecuperacion.delete(correo);
                 return res.status(401).json({
                     error: true,
@@ -154,7 +154,7 @@ export class AccesoControlador
                 });
             }
             
-            if (infoRecuperacion.codigo !== codigo) {
+            if (InfoRecuperacion.codigo !== codigo) {
                 return res.status(400).json({
                     error: true,
                     estado: 400,
@@ -205,23 +205,23 @@ export class AccesoControlador
                 });
             }
 
-            const resultado = await this.modeloAcceso.VerificarCredenciales({ 
+            const Resultado = await this.modeloAcceso.VerificarCredenciales({ 
                 datos: ResultadoValidacion.data 
             });
 
-            let codigoResultado = parseInt(resultado.resultado);
+            let codigoResultado = parseInt(Resultado.resultado);
 
             if (codigoResultado != 200) {
                 return res.status(codigoResultado).json({
                     error: true,
                     estado: codigoResultado,
-                    mensaje: resultado.mensaje
+                    mensaje: Resultado.mensaje
                 });
             }
 
             try {
                 const payloadJWT = { 
-                    idUsuario: resultado.datosAdicionales.idUsuarioRegistrado 
+                    idUsuario: Resultado.datosAdicionales.idUsuarioRegistrado 
                 };
                 
                 const token = await GenerarJWT(payloadJWT);
@@ -229,12 +229,12 @@ export class AccesoControlador
                 return res.status(200).json({
                     error: false,
                     estado: 200,
-                    mensaje: resultado.mensaje,
-                    token: token, // Incluir el token en la respuesta
+                    mensaje: Resultado.mensaje,
+                    token: token, 
                     datos: {
-                        idUsuario: resultado.datosAdicionales.idUsuarioRegistrado,
-                        nombre: resultado.datosAdicionales.nombre,
-                        fotoPerfil: resultado.datosAdicionales.fotoPerfil
+                        idUsuario: Resultado.datosAdicionales.idUsuarioRegistrado,
+                        nombre: Resultado.datosAdicionales.nombre,
+                        fotoPerfil: Resultado.datosAdicionales.fotoPerfil
                     }
                 });
             } catch (errorToken) {
@@ -267,24 +267,24 @@ export class AccesoControlador
                 });
             }
 
-            const resultado = await this.modeloAcceso.EliminarCuenta({ 
+            const Resultado = await this.modeloAcceso.EliminarCuenta({ 
                 datos: ResultadoValidacion.data 
             });
 
-            let codigoResultado = parseInt(resultado.resultado);
+            let codigoResultado = parseInt(Resultado.resultado);
 
             if (codigoResultado !== 200) {
                 return res.status(codigoResultado).json({
                     error: true,
                     estado: codigoResultado,
-                    mensaje: resultado.mensaje
+                    mensaje: Resultado.mensaje
                 });
             }
 
             return res.status(200).json({
                 error: false,
                 estado: 200,
-                mensaje: resultado.mensaje
+                mensaje: Resultado.mensaje
             });
     } catch (error) {
             logger({ mensaje: `Error al intentar eliminar la cuenta: ${error}` });
@@ -308,11 +308,11 @@ export class AccesoControlador
                 });
             }   
 
-            const idAdministrador = req.idUsuario; 
+            const IdAdministrador = req.idUsuario; 
 
-            const adminUser = await this.modeloAcceso.VerificarAdmin({ idUsuario: idAdministrador });
+            const AdminUser = await this.modeloAcceso.VerificarAdmin({ idUsuario: IdAdministrador });
         
-            if (!adminUser || adminUser.tipoAcceso !== 'Administrador') {
+            if (!AdminUser || AdminUser.tipoAcceso !== 'Administrador') {
             return res.status(403).json({
                 error: true,
                 estado: 403,
@@ -322,7 +322,7 @@ export class AccesoControlador
 
             const datosBaneo = {
                 idUsuarioRegistrado: ResultadoValidacion.data.idUsuarioRegistrado,
-                idAdministrador: idAdministrador 
+                idAdministrador: IdAdministrador 
             };
 
             const resultado = await this.modeloAcceso.BanearUsuario({

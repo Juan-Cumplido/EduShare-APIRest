@@ -1,7 +1,6 @@
 import zod from 'zod';
 import { SoloLetrasNumerosCaracteres, SoloRutas } from '../utilidades/RegexValidadores.js';
 
-// Definición de enumeraciones según el diagrama de clases
 const EstadoPublicacionEnum = zod.enum(['aceptado', 'rechazado', 'eliminado', 'enRevisión']);
 const EstadoUsuarioEnum = zod.enum(['activo', 'baneado']);
 const NivelEducativoEnum = zod.enum(['Preparatoria', 'Universidad']);

@@ -82,10 +82,15 @@ CREATE TABLE MateriaYRama (
 );
 GO
 
+CREATE TABLE Categoria (
+    idCategoria INT IDENTITY(1,1) PRIMARY KEY,
+    nombreCategoria NVARCHAR(25) NOT NULL UNIQUE
+);
+
 -- Tabla Publicacion
 CREATE TABLE Publicacion (
     idPublicacion INT IDENTITY(1,1) PRIMARY KEY,
-    categoria NVARCHAR(25) NOT NULL,
+    idCategoria INT NOT NULL,
     fecha DATE NOT NULL,
     resuContenido NVARCHAR(200) NOT NULL,
     estado NVARCHAR(20) NOT NULL,
@@ -98,7 +103,8 @@ CREATE TABLE Publicacion (
     idMateriaYRama INT NOT NULL,
     FOREIGN KEY (idMateriaYRama) REFERENCES MateriaYRama(idMateriaYRama),
     FOREIGN KEY (idUsuarioRegistrado) REFERENCES UsuarioRegistrado(idUsuarioRegistrado),
-    FOREIGN KEY (idDocumento) REFERENCES Documento(idDocumento)
+    FOREIGN KEY (idDocumento) REFERENCES Documento(idDocumento),
+    FOREIGN KEY (idCategoria) REFERENCES Categoria(idCategoria)
 );
 GO
 
