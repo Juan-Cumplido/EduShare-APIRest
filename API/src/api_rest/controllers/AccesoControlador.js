@@ -1,7 +1,8 @@
-import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta } from "../schemas/Acceso.js";
+import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta, ValidarBaneo} from "../schemas/Acceso.js";
 import { logger } from "../utilidades/logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
+import { GenerarJWT } from "../utilidades/generadorjwt.js";
 
 export class AccesoControlador
 {
@@ -72,16 +73,16 @@ export class AccesoControlador
             let codigoResultado = parseInt(ResultadoRecuperacion.resultado); 
         
             if (codigoResultado == 200 ){
-                const codigo = Math.floor(100000 + Math.random() * 900000);
+                const Codigo = Math.floor(100000 + Math.random() * 900000);
 
                 this.codigosRecuperacion.set(correo, {
-                    codigo: codigo.toString(),
+                    codigo: Codigo.toString(),
                     expira: Date.now() + 30 * 60 * 1000 
                 });
 
             try {
                  const rutaPlantilla = path.join(process.cwd(), 'resources', 'plantillas', 'recuperacion-contrasena.html');
-                 await EnviarCorreoDeVerificacion(rutaPlantilla, correo, codigo.toString());
+                 await EnviarCorreoDeVerificacion(rutaPlantilla, correo, Codigo.toString());
                 
                 const respuesta = {
                     error: false,
@@ -90,7 +91,7 @@ export class AccesoControlador
                 };
 
                 if (process.env.TEST == 'TRUE') {
-                    respuesta.codigo = codigo;
+                    respuesta.codigo = Codigo;
                 }
 
                 res.status(200).json(respuesta);
@@ -134,9 +135,9 @@ export class AccesoControlador
 
             const { correo, codigo, nuevaContrasenia } = ResultadoValidacion.data;
             
-            const infoRecuperacion = this.codigosRecuperacion.get(correo);
+            const InfoRecuperacion = this.codigosRecuperacion.get(correo);
             
-            if (!infoRecuperacion) {
+            if (!InfoRecuperacion) {
                 return res.status(404).json({
                     error: true,
                     estado: 404,
@@ -144,7 +145,7 @@ export class AccesoControlador
                 });
             }
             
-            if (Date.now() > infoRecuperacion.expira) {
+            if (Date.now() > InfoRecuperacion.expira) {
                 this.codigosRecuperacion.delete(correo);
                 return res.status(401).json({
                     error: true,
@@ -153,7 +154,7 @@ export class AccesoControlador
                 });
             }
             
-            if (infoRecuperacion.codigo !== codigo) {
+            if (InfoRecuperacion.codigo !== codigo) {
                 return res.status(400).json({
                     error: true,
                     estado: 400,
@@ -204,30 +205,46 @@ export class AccesoControlador
                 });
             }
 
-            const resultado = await this.modeloAcceso.VerificarCredenciales({ 
+            const Resultado = await this.modeloAcceso.VerificarCredenciales({ 
                 datos: ResultadoValidacion.data 
             });
 
-            let codigoResultado = parseInt(resultado.resultado);
+            let codigoResultado = parseInt(Resultado.resultado);
 
             if (codigoResultado != 200) {
                 return res.status(codigoResultado).json({
                     error: true,
                     estado: codigoResultado,
-                    mensaje: resultado.mensaje
+                    mensaje: Resultado.mensaje
                 });
             }
 
-            return res.status(200).json({
-                error: false,
-                estado: 200,
-                mensaje: resultado.mensaje,
-                datos: {
-                    idUsuarioRegistrado: resultado.datosAdicionales.idUsuarioRegistrado,
-                    nombre: resultado.datosAdicionales.nombre,
-                    fotoPerfil: resultado.datosAdicionales.fotoPerfil
-                }
-            });
+            try {
+                const payloadJWT = { 
+                    idUsuario: Resultado.datosAdicionales.idUsuarioRegistrado 
+                };
+                
+                const token = await GenerarJWT(payloadJWT);
+                
+                return res.status(200).json({
+                    error: false,
+                    estado: 200,
+                    mensaje: Resultado.mensaje,
+                    token: token, 
+                    datos: {
+                        idUsuario: Resultado.datosAdicionales.idUsuarioRegistrado,
+                        nombre: Resultado.datosAdicionales.nombre,
+                        fotoPerfil: Resultado.datosAdicionales.fotoPerfil
+                    }
+                });
+            } catch (errorToken) {
+                logger({ mensaje: `Error al generar JWT: ${errorToken}` });
+                return res.status(500).json({
+                    error: true,
+                    estado: 500,
+                    mensaje: "Error al generar token de autenticación"
+                });
+            }
         } catch (error) {
             logger({ mensaje: `Error al intentar verificar las credenciales de un usuario: ${error}` });
             res.status(500).json({
@@ -250,12 +267,70 @@ export class AccesoControlador
                 });
             }
 
-            const resultado = await this.modeloAcceso.EliminarCuenta({ 
+            const Resultado = await this.modeloAcceso.EliminarCuenta({ 
                 datos: ResultadoValidacion.data 
             });
 
-            let codigoResultado = parseInt(resultado.resultado);
+            let codigoResultado = parseInt(Resultado.resultado);
 
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: Resultado.mensaje
+                });
+            }
+
+            return res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: Resultado.mensaje
+            });
+    } catch (error) {
+            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar eliminar la cuenta"
+            });
+        }
+    }   
+
+    BanearUsuario = async (req, res) => {
+        try{
+            const ResultadoValidacion = ValidarBaneo(req.body);
+
+            if (!ResultadoValidacion.success){  
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }   
+
+            const IdAdministrador = req.idUsuario; 
+
+            const AdminUser = await this.modeloAcceso.VerificarAdmin({ idUsuario: IdAdministrador });
+        
+            if (!AdminUser || AdminUser.tipoAcceso !== 'Administrador') {
+            return res.status(403).json({
+                error: true,
+                estado: 403,
+                mensaje: 'No tiene permisos para realizar esta acción.'
+            });
+        }
+
+            const datosBaneo = {
+                idUsuarioRegistrado: ResultadoValidacion.data.idUsuarioRegistrado,
+                idAdministrador: IdAdministrador 
+            };
+
+            const resultado = await this.modeloAcceso.BanearUsuario({
+                datos: datosBaneo
+            })
+
+            let codigoResultado = parseInt(resultado.resultado);
+            
             if (codigoResultado !== 200) {
                 return res.status(codigoResultado).json({
                     error: true,
@@ -269,13 +344,54 @@ export class AccesoControlador
                 estado: 200,
                 mensaje: resultado.mensaje
             });
-    } catch (error) {
-            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error}` });
+        } catch (error){
+            logger({ mensaje: `Error al intentar banear al usuario: ${error}` });
             res.status(500).json({
                 error: true,
                 estado: 500,
-                mensaje: "Ha ocurrido un error al intentar eliminar la cuenta"
+                mensaje: "Ha ocurrido un error al intentar banear al usuario"
             });
         }
-    }   
+    }
+
+    RegistrarAccesoAdmin = async (req, res) => {
+        try {
+            const ResultadoValidacion = ValidarInsercionAcceso(req.body);
+
+            if (ResultadoValidacion.success) {
+                const ResultadoInsercion = await this.modeloAcceso.InsertarNuevaCuentaAdmin({ 
+                    datos: ResultadoValidacion.data 
+                });
+                
+                let resultadoInsercion = parseInt(ResultadoInsercion.resultado);
+                if (resultadoInsercion === 500) {
+                    logger({ mensaje: ResultadoInsercion.mensaje });
+                    res.status(resultadoInsercion).json({
+                        error: true,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: 'Ha ocurrido un error en la base de datos al querer insertar los datos una nueva cuenta de acceso'
+                    });
+                } else {
+                    res.status(resultadoInsercion).json({
+                        error: resultadoInsercion !== 200,
+                        estado: ResultadoInsercion.resultado,
+                        mensaje: ResultadoInsercion.mensaje
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
+        } catch (error) {
+            logger({ mensaje: error });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al querer registrar el Acceso."
+            });
+        }
+    }
 }
