@@ -205,3 +205,8 @@ SELECT @idMateria = idMateria FROM Materia WHERE nombreMateria = 'Física';
 INSERT INTO MateriaYRama (idMateria, idRama) VALUES (@idMateria, @idRama);
 SELECT @idMateria = idMateria FROM Materia WHERE nombreMateria = 'Termodinámica';
 INSERT INTO MateriaYRama (idMateria, idRama) VALUES (@idMateria, @idRama);
+
+
+INSERT INTO CATEGORIA(nombreCategoria) VALUES ('Apuntes')
+INSERT INTO CATEGORIA(nombreCategoria) VALUES ('Diapositivas')
+INSERT INTO CATEGORIA(nombreCategoria) VALUES ('Tarea')

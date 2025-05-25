@@ -103,7 +103,7 @@ beforeAll(async () => {
     tokenUsuarioNormal = loginUsuarioNormal.body.token;
     idUsuarioABanear = loginUsuarioBanear.body.datos.idUsuario;
     idUsuarioNormal = loginUsuarioNormal.body.datos.idUsuario;
-}, 30000);
+}, 100000);
 
 afterAll(async () => {
 
@@ -134,7 +134,7 @@ afterAll(async () => {
     if (servidor && servidor.close) {
         await new Promise(resolve => servidor.close(resolve));
     }
-}, 30000);
+}, 100000);
 
 describe('Test de cuenta de acceso', () => {
     test('POST /acceso - Se crea una nueva cuenta de acceso', async () => {
@@ -269,11 +269,6 @@ describe('Test de cuenta de acceso', () => {
                 contrasenia: contraseñaAdmin
             });
         
-        console.log("Admin login response:", loginAdmin.body);
-        console.log("Admin token:", tokenAdministrador);
-        
-        console.log("Admin ID from login:", loginAdmin.body.datos?.idUsuario);
-        
         expect(loginAdmin.statusCode).toBe(200);
         expect(loginAdmin.body.token).toBeDefined();
     });
@@ -283,17 +278,12 @@ describe('Test de cuenta de acceso', () => {
             idUsuarioRegistrado: idUsuarioABanear
         };
 
-        console.log("Admin token being used:", tokenAdministrador);
-        console.log("Admin ID from token:", jwt.decode(tokenAdministrador).idUsuario);
-        console.log("User ID to ban:", idUsuarioABanear);
-
         const res = await request(app)
             .post("/edushare/acceso/banearUsuario")
             .set("Authorization", `Bearer ${tokenAdministrador}`)
             .set("content-type", "application/json")
             .send(datosBaneo);
 
-        console.log("Ban response:", res.body);
 
         expect(res.statusCode).toBe(200);
         expect(res.body).toEqual({

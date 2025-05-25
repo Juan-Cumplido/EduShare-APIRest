@@ -26,3 +26,10 @@ export function MensajeDeRetornoBaseDeDatosInfoAdicional({datos})
     return {resultado, mensaje, datosAdicionales};
 }
 
+export function MensajeDeRetornoBaseDeDatosCatalogo({ datos, recordset }) {
+    return {
+        resultado: datos.resultado,
+        mensaje: datos.mensaje,
+        datos: recordset || []
+    };
+}
