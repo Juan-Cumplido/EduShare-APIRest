@@ -142,3 +142,57 @@ BEGIN
     END CATCH
 END
 GO
+
+-- Procedimiento almacenado para recuperar Instituciones
+CREATE OR ALTER PROCEDURE sps_RecuperarInstituciones
+    @nivelEducativo NVARCHAR(20) = NULL, -- Parámetro opcional para filtrar por nivel
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF @nivelEducativo IS NOT NULL AND @nivelEducativo NOT IN ('Preparatoria', 'Universidad')
+        BEGIN
+            SET @resultado = 400;
+            SET @mensaje = 'Nivel educativo no válido. Use "Preparatoria" o "Universidad"';
+            RETURN;
+        END
+
+        -- Verificar si existen instituciones con el filtro aplicado
+        IF EXISTS (
+            SELECT 1 FROM Institucion 
+            WHERE (@nivelEducativo IS NULL OR nivelEducativo = @nivelEducativo)
+        )
+        BEGIN
+            SELECT 
+                idInstitucion,
+                nombreInstitucion,
+                carrera,
+                nivelEducativo
+            FROM Institucion
+            WHERE (@nivelEducativo IS NULL OR nivelEducativo = @nivelEducativo)
+            ORDER BY nivelEducativo, nombreInstitucion;
+            
+            SET @resultado = 200;
+            IF @nivelEducativo IS NULL
+                SET @mensaje = 'Instituciones recuperadas exitosamente';
+            ELSE
+                SET @mensaje = 'Instituciones de ' + @nivelEducativo + ' recuperadas exitosamente';
+        END
+        ELSE
+        BEGIN
+            SET @resultado = 404;
+            IF @nivelEducativo IS NULL
+                SET @mensaje = 'No se encontraron instituciones registradas';
+            ELSE
+                SET @mensaje = 'No se encontraron instituciones de ' + @nivelEducativo + ' registradas';
+        END
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al recuperar las instituciones: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO

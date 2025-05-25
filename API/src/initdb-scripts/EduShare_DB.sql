@@ -20,7 +20,6 @@ GO
 CREATE TABLE Institucion (
     idInstitucion INT IDENTITY(1,1) PRIMARY KEY,
     nombreInstitucion NVARCHAR(100) NOT NULL,
-    carrera NVARCHAR(70) NOT NULL,
     nivelEducativo NVARCHAR(20) NOT NULL
 );
 GO
