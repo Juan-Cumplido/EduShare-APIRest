@@ -2,6 +2,7 @@ import express, { json, urlencoded } from 'express';
 import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
 import { CrearRutaPublicacion } from './api_rest/routes/Publicaciones.js';
 import { CrearRutaCatalogo } from './api_rest/routes/Catalogo.js';
+import { CrearRutaSeguimiento } from './api_rest/routes/Seguimiento.js';
 import { DocumentoSwagger } from './api_rest/utilidades/swagger.js';
 import swaggerUI from 'swagger-ui-express';
 import dotenv from 'dotenv';
