@@ -1,4 +1,3 @@
-
 export function ErrorEnLaBaseDeDatos()
 {
     return {estado: 500, mensaje: "Ha ocurrido un error en la base de datos"}
