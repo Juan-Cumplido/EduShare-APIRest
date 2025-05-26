@@ -234,7 +234,11 @@ export class AccesoControlador
                     datos: {
                         idUsuario: Resultado.datosAdicionales.idUsuarioRegistrado,
                         nombre: Resultado.datosAdicionales.nombre,
-                        fotoPerfil: Resultado.datosAdicionales.fotoPerfil
+                        fotoPerfil: Resultado.datosAdicionales.fotoPerfil,
+                        correo: Resultado.datosAdicionales.correo,
+                        nombreUsuario: Resultado.datosAdicionales.nombreUsuario,
+                        primerApellido: Resultado.datosAdicionales.primerApellido,
+                        segundoApellido: Resultado.datosAdicionales.segundoApellido
                     }
                 });
             } catch (errorToken) {

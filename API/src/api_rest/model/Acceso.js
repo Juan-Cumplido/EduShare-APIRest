@@ -143,6 +143,10 @@ export class ModeloAcceso {
                 .output('idUsuarioRegistrado', sql.Int)
                 .output('nombre', sql.NVarChar(30))
                 .output('fotoPerfil', sql.NVarChar(sql.MAX))
+                .output('correo', sql.NVarChar(256))
+                .output('nombreUsuario', sql.NVarChar(15))
+                .output('primerApellido', sql.NVarChar(30))
+                .output('segundoApellido', sql.NVarChar(30))
                 .execute('spi_VerificarCredenciales');
 
             resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
@@ -152,7 +156,11 @@ export class ModeloAcceso {
                     datosAdicionales: {
                         idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
                         nombre: ResultadoSolicitud.output.nombre || null, 
-                        fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+                        fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null,
+                        correo: ResultadoSolicitud.output.correo || null,
+                        nombreUsuario: ResultadoSolicitud.output.nombreUsuario || null,
+                        primerApellido: ResultadoSolicitud.output.primerApellido || null,
+                        segundoApellido: ResultadoSolicitud.output.segundoApellido || null      
                     }
                 }
             });
