@@ -3,9 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
 import { CrearRutaCatalogo } from './api_rest/routes/Catalogo.js';
+import { CrearRutaSeguimiento } from './api_rest/routes/Seguimiento.js';
 
 
-export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo}) => {
+export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimiento}) => {
     const app = express();
     dotenv.config();
     app.use(json());
@@ -18,6 +19,7 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo}) => {
 
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
     app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
+    app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
 
 
     const PUERTO = process.env.PUERTO_PRUEBAS;

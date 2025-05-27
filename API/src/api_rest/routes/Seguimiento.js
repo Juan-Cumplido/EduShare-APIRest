@@ -1,20 +1,22 @@
 import express from 'express';
-import { SeguimientoControlador } from '../controllers/SeguimientoControlador';
+import { SeguimientoControlador } from '../controllers/SeguimientoControlador.js';
 import { ValidarJwt } from '../middlewares/jwt.js';
 
-export const CrearRutaSeguimiento = ({ SeguimientoControlador }) => {
+export const CrearRutaSeguimiento = ({ ModeloSeguimiento }) => {
     const router = express.Router();
     const ControladorSeguimiento = new SeguimientoControlador({ModeloSeguimiento});
 
-    router.post('/seguir', ValidarJwt, ControladorSeguimiento.SeguirUsuario);
+    router.use(ValidarJwt);
 
-    router.delete('/dejar-de-seguir', ValidarJwt, ControladorSeguimiento.DejarDeSeguirUsuario);
+    router.post('/seguir', ControladorSeguimiento.SeguirUsuario);
 
-    router.get('/verificar/:idUsuarioSeguido', ValidarJwt, ControladorSeguimiento.VerificarSeguimiento);
+    router.delete('/dejar-seguir', ControladorSeguimiento.DejarDeSeguirUsuario);
 
-    router.get('/seguidores/:idUsuario', ControladorSeguimiento.ObtenerSeguidores);
+    router.get('/seguidores', ControladorSeguimiento.ObtenerSeguidores);
 
-    router.get('/seguidos/:idUsuario', ControladorSeguimiento.ObtenerSeguidos);
-;
+    router.get('/seguidos', ControladorSeguimiento.ObtenerSeguidos);
+
+    router.get('/verificar/:idUsuario', ControladorSeguimiento.VerificarSeguimiento);
+
     return router;
 }

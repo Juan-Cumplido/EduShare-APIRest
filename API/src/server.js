@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 
-export const CrearServidor = ({ModeloAcceso, ModeloPublicaciones, ModeloCatalogo}) => {
+export const CrearServidor = ({ModeloAcceso, ModeloPublicaciones, ModeloCatalogo, ModeloSeguimiento}) => {
     const app = express();
     dotenv.config();
     app.use(json({limit:'100mb'}));
@@ -18,10 +18,9 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicaciones, ModeloCatalogo
     app.disable('x-powered-by');
 
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
-
     app.use('/edushare/publicaciones', CrearRutaPublicacion({ModeloPublicaciones}));
-
     app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
+    app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
     
     app.use('/edushare/doc',swaggerUI.serve, swaggerUI.setup(DocumentoSwagger));
 

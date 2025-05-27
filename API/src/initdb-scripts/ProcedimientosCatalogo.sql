@@ -1,5 +1,5 @@
 -- Procedimiento almacenado para recuperar todas las categorías
-CREATE OR ALTER PROCEDURE spi_RecuperarCategorias
+CREATE OR ALTER PROCEDURE sps_RecuperarCategorias
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
 AS
@@ -32,7 +32,7 @@ END
 GO
 
 -- Procedimiento almacenado para recuperar todas las ramas
-CREATE OR ALTER PROCEDURE spi_RecuperarRamas
+CREATE OR ALTER PROCEDURE sps_RecuperarRamas
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
 AS
@@ -65,7 +65,7 @@ END
 GO
 
 -- Procedimiento almacenado para recuperar todas las materias
-CREATE OR ALTER PROCEDURE spi_RecuperarMaterias
+CREATE OR ALTER PROCEDURE sps_RecuperarMaterias
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
 AS
@@ -98,7 +98,7 @@ END
 GO
 
 -- Procedimiento almacenado para recuperar materias por rama específica
-CREATE OR ALTER PROCEDURE spi_RecuperarMateriasPorRama
+CREATE OR ALTER PROCEDURE sps_RecuperarMateriasPorRama
     @idRama INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -160,7 +160,6 @@ BEGIN
             RETURN;
         END
 
-        -- Verificar si existen instituciones con el filtro aplicado
         IF EXISTS (
             SELECT 1 FROM Institucion 
             WHERE (@nivelEducativo IS NULL OR nivelEducativo = @nivelEducativo)
@@ -169,7 +168,6 @@ BEGIN
             SELECT 
                 idInstitucion,
                 nombreInstitucion,
-                carrera,
                 nivelEducativo
             FROM Institucion
             WHERE (@nivelEducativo IS NULL OR nivelEducativo = @nivelEducativo)

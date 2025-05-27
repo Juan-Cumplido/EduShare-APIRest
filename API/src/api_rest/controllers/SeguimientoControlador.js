@@ -1,4 +1,4 @@
-import { ValidarSeguimiento, ValidarIdUsuario } from "../schemas/Seguimiento.js";
+import { ValidarSeguimiento, ValidarConsultaSeguimiento } from "../schemas/Seguimiento.js";
 import { logger } from "../utilidades/logger.js";
 
 export class SeguimientoControlador {
@@ -6,214 +6,215 @@ export class SeguimientoControlador {
         this.modeloSeguimiento = ModeloSeguimiento;
     }
 
-    SeguirUsuario = async (req, res) => {
+   SeguirUsuario = async (req, res) => {
         try {
-            const idUsuarioSeguidor = req.idUsuario; // Del JWT
-            const { idUsuarioSeguido } = req.body;
+            const datos = {
+                idUsuarioSeguidor: req.idUsuario,
+                idUsuarioSeguido: parseInt(req.body.idUsuarioSeguido)
+            };
 
-            // Validar que el usuario del JWT coincida con el que hace la solicitud
-            if (!idUsuarioSeguidor) {
-                return this.responderConError(res, 401, "Token de autenticación inválido");
+            const ResultadoValidacion = ValidarSeguimiento(datos);
+
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
             }
 
-            const resultadoValidacion = ValidarSeguimiento({ 
-                idUsuarioSeguidor, 
-                idUsuarioSeguido 
+            const ResultadoSeguimiento = await this.modeloSeguimiento.SeguirUsuario({
+                datos: ResultadoValidacion.data
             });
 
-            if (!resultadoValidacion.success) {
-                const errores = resultadoValidacion.error.formErrors.fieldErrors;
-                return this.responderConError(res, 400, errores);
-            }
+            let codigoResultado = parseInt(ResultadoSeguimiento.resultado);
 
-            const { idUsuarioSeguidor: seguidorValidado, idUsuarioSeguido: seguidoValidado } = resultadoValidacion.data;
-            
-            const resultado = await this.modeloSeguimiento.SeguirUsuario({
-                idUsuarioSeguidor: seguidorValidado,
-                idUsuarioSeguido: seguidoValidado
+            res.status(codigoResultado).json({
+                error: codigoResultado !== 200,
+                estado: codigoResultado,
+                mensaje: ResultadoSeguimiento.mensaje
             });
-
-            this.manejarResultadoOperacion(res, resultado);
 
         } catch (error) {
-            logger(`Error en SeguirUsuario: ${error}`);
-            this.responderConError(res, 500, "Ha ocurrido un error al seguir al usuario");
+            logger({ mensaje: `Error al seguir usuario: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar seguir al usuario"
+            });
         }
     }
 
     DejarDeSeguirUsuario = async (req, res) => {
         try {
-            const idUsuarioSeguidor = req.idUsuario; // Del JWT
-            const { idUsuarioSeguido } = req.body;
+            const datos = {
+                idUsuarioSeguidor: req.idUsuario,
+                idUsuarioSeguido: parseInt(req.body.idUsuarioSeguido)
+            };
 
-            // Validar que el usuario del JWT coincida con el que hace la solicitud
-            if (!idUsuarioSeguidor) {
-                return this.responderConError(res, 401, "Token de autenticación inválido");
-            }
+            const ResultadoValidacion = ValidarSeguimiento(datos);
 
-            const resultadoValidacion = ValidarSeguimiento({ 
-                idUsuarioSeguidor, 
-                idUsuarioSeguido 
-            });
-
-            if (!resultadoValidacion.success) {
-                const errores = resultadoValidacion.error.formErrors.fieldErrors;
-                return this.responderConError(res, 400, errores);
-            }
-
-            const { idUsuarioSeguidor: seguidorValidado, idUsuarioSeguido: seguidoValidado } = resultadoValidacion.data;
-            
-            const resultado = await this.modeloSeguimiento.DejarDeSeguirUsuario({
-                idUsuarioSeguidor: seguidorValidado,
-                idUsuarioSeguido: seguidoValidado
-            });
-
-            this.manejarResultadoOperacion(res, resultado);
-
-        } catch (error) {
-            logger(`Error en DejarDeSeguirUsuario: ${error}`);
-            this.responderConError(res, 500, "Ha ocurrido un error al dejar de seguir al usuario");
-        }
-    }
-
-    VerificarSeguimiento = async (req, res) => {
-        try {
-            const idUsuarioSeguidor = req.idUsuario; // Del JWT
-            const { idUsuarioSeguido } = req.params;
-
-            // Validar que el usuario del JWT esté presente
-            if (!idUsuarioSeguidor) {
-                return this.responderConError(res, 401, "Token de autenticación inválido");
-            }
-
-            const resultadoValidacion = ValidarSeguimiento({ 
-                idUsuarioSeguidor, 
-                idUsuarioSeguido: parseInt(idUsuarioSeguido)
-            });
-
-            if (!resultadoValidacion.success) {
-                const errores = resultadoValidacion.error.formErrors.fieldErrors;
-                return this.responderConError(res, 400, errores);
-            }
-
-            const { idUsuarioSeguidor: seguidorValidado, idUsuarioSeguido: seguidoValidado } = resultadoValidacion.data;
-            
-            const resultado = await this.modeloSeguimiento.VerificarSeguimiento({
-                idUsuarioSeguidor: seguidorValidado,
-                idUsuarioSeguido: seguidoValidado
-            });
-
-            const codigo = parseInt(resultado.estado);
-            
-            if (codigo === 200) {
-                this.responderConExito(res, resultado.mensaje, {
-                    siguiendo: resultado.siguiendo === 1
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
                 });
-            } else {
-                this.responderConError(res, codigo, resultado.mensaje);
             }
 
+            const ResultadoDejarSeguir = await this.modeloSeguimiento.DejarDeSeguirUsuario({
+                datos: ResultadoValidacion.data
+            });
+
+            let codigoResultado = parseInt(ResultadoDejarSeguir.resultado);
+
+            res.status(codigoResultado).json({
+                error: codigoResultado !== 200,
+                estado: codigoResultado,
+                mensaje: ResultadoDejarSeguir.mensaje
+            });
+
         } catch (error) {
-            logger(`Error en VerificarSeguimiento: ${error}`);
-            this.responderConError(res, 500, "Ha ocurrido un error al verificar el seguimiento");
+            logger({ mensaje: `Error al dejar de seguir usuario: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al intentar dejar de seguir al usuario"
+            });
         }
     }
 
     ObtenerSeguidores = async (req, res) => {
         try {
-            const { idUsuario } = req.params;
+            const datos = {
+                idUsuario: req.idUsuario
+            };
 
-            const resultadoValidacion = ValidarIdUsuario({ idUsuario: parseInt(idUsuario) });
+            const ResultadoValidacion = ValidarConsultaSeguimiento(datos);
 
-            if (!resultadoValidacion.success) {
-                const errores = resultadoValidacion.error.formErrors.fieldErrors;
-                return this.responderConError(res, 400, errores);
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
             }
 
-            const { idUsuario: idUsuarioValidado } = resultadoValidacion.data;
-            
-            const resultado = await this.modeloSeguimiento.RecuperarSeguidores({
-                idUsuario: idUsuarioValidado
+            const ResultadoSeguidores = await this.modeloSeguimiento.ObtenerSeguidores({
+                datos: ResultadoValidacion.data
             });
 
-            const codigo = parseInt(resultado.estado);
-            
-            if (codigo === 200) {
-                this.responderConExito(res, resultado.mensaje, {
-                    seguidores: resultado.datos || []
+            let codigoResultado = parseInt(ResultadoSeguidores.resultado);
+
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: ResultadoSeguidores.mensaje
                 });
-            } else {
-                this.responderConError(res, codigo, resultado.mensaje);
             }
 
+            res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: ResultadoSeguidores.mensaje,
+                datos: ResultadoSeguidores.datos
+            });
+
         } catch (error) {
-            logger(`Error en ObtenerSeguidores: ${error}`);
-            this.responderConError(res, 500, "Ha ocurrido un error al obtener los seguidores");
+            logger({ mensaje: `Error al obtener seguidores: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al obtener los seguidores"
+            });
         }
     }
 
     ObtenerSeguidos = async (req, res) => {
         try {
-            const { idUsuario } = req.params;
+            const datos = {
+                idUsuario: req.idUsuario
+            };
 
-            const resultadoValidacion = ValidarIdUsuario({ idUsuario: parseInt(idUsuario) });
+            const ResultadoValidacion = ValidarConsultaSeguimiento(datos);
 
-            if (!resultadoValidacion.success) {
-                const errores = resultadoValidacion.error.formErrors.fieldErrors;
-                return this.responderConError(res, 400, errores);
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
             }
 
-            const { idUsuario: idUsuarioValidado } = resultadoValidacion.data;
-            
-            const resultado = await this.modeloSeguimiento.RecuperarSeguidos({
-                idUsuario: idUsuarioValidado
+            const ResultadoSeguidos = await this.modeloSeguimiento.ObtenerSeguidos({
+                datos: ResultadoValidacion.data
             });
 
-            const codigo = parseInt(resultado.estado);
-            
-            if (codigo === 200) {
-                this.responderConExito(res, resultado.mensaje, {
-                    seguidos: resultado.datos || []
+            let codigoResultado = parseInt(ResultadoSeguidos.resultado);
+
+            if (codigoResultado !== 200) {
+                return res.status(codigoResultado).json({
+                    error: true,
+                    estado: codigoResultado,
+                    mensaje: ResultadoSeguidos.mensaje
                 });
-            } else {
-                this.responderConError(res, codigo, resultado.mensaje);
             }
 
+            res.status(200).json({
+                error: false,
+                estado: 200,
+                mensaje: ResultadoSeguidos.mensaje,
+                datos: ResultadoSeguidos.datos
+            });
+
         } catch (error) {
-            logger(`Error en ObtenerSeguidos: ${error}`);
-            this.responderConError(res, 500, "Ha ocurrido un error al obtener los usuarios seguidos");
+            logger({ mensaje: `Error al obtener seguidos: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al obtener los usuarios seguidos"
+            });
         }
     }
 
-    manejarResultadoOperacion = (res, resultado) => {
-        const codigo = parseInt(resultado.resultado);
-        
-        if (codigo === 200 || codigo === 201) {
-            this.responderConExito(res, resultado.mensaje);
-        } else {
-            this.responderConError(res, codigo, resultado.mensaje);
+    VerificarSeguimiento = async (req, res) => {
+        try {
+            const datos = {
+                idUsuarioSeguidor: req.idUsuario,
+                idUsuarioSeguido: parseInt(req.params.idUsuario)
+            };
+
+            const ResultadoValidacion = ValidarSeguimiento(datos);
+
+            if (!ResultadoValidacion.success) {
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors.fieldErrors
+                });
+            }
+
+            const ResultadoVerificacion = await this.modeloSeguimiento.VerificarSeguimiento({
+                datos: ResultadoValidacion.data
+            });
+
+            let codigoResultado = parseInt(ResultadoVerificacion.resultado);
+
+            res.status(codigoResultado).json({
+                error: codigoResultado !== 200,
+                estado: codigoResultado,
+                mensaje: ResultadoVerificacion.mensaje,
+                siguiendo: codigoResultado === 200
+            });
+
+        } catch (error) {
+            logger({ mensaje: `Error al verificar seguimiento: ${error}` });
+            res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al verificar el seguimiento"
+            });
         }
-    }
-
-    responderConExito = (res, mensaje, datos = null) => {
-        const respuesta = {
-            error: false,
-            estado: 200,
-            mensaje
-        };
-
-        if (datos) {
-            respuesta.datos = datos;
-        }
-
-        res.status(200).json(respuesta);
-    }
-
-    responderConError = (res, codigo, mensaje) => {
-        res.status(codigo).json({
-            error: true,
-            estado: codigo,
-            mensaje
-        });
     }
 }

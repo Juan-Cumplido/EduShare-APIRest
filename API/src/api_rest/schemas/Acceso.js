@@ -19,6 +19,17 @@ const CuentaEsquema = zod.object(
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
 });
 
+const InicioSesionEsquema = zod.object({
+    identifier: zod.string()
+        .min(1)
+        .max(256)
+        .regex(SoloIdentificadores, {
+            message: 'Debe ser un nombre de usuario (solo letras y números) o correo electrónico válido'
+        }),
+    contrasenia: zod.string({invalid_type_error: 'La contraseña ingresada no es válida', required_error: 'La contraseña es un campo requerido'}).min(8, 
+        { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
+});
+
 const CorreoEsquema = zod.object({
   correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
     'El correo es demasiado grande. Max 256')
@@ -60,19 +71,12 @@ const BaneoEsquema = zod.object({
 }
 )
 
-const InicioSesionEsquema = zod.object({
-    identifier: zod.string()
-        .min(1)
-        .max(256)
-        .regex(SoloIdentificadores, {
-            message: 'Debe ser un nombre de usuario (solo letras y números) o correo electrónico válido'
-        }),
-    contrasenia: zod.string({invalid_type_error: 'La contraseña ingresada no es válida', required_error: 'La contraseña es un campo requerido'}).min(8, 
-        { message: 'La contraseña debe tener al menos 8 caracteres' }).max(300, { message: 'La contraseña es demasiado larga' })
-});
-
 export function ValidarInsercionAdmin(entrada) {
     return CuentaAdminEsquema.safeParse(entrada);
+}
+
+export function ValidarCredenciales(entrada) {
+    return InicioSesionEsquema.safeParse(entrada);
 }
 
 export function ValidarBaneo(entrada){
@@ -80,10 +84,6 @@ export function ValidarBaneo(entrada){
     return resultado;
 }
 
-
-export function ValidarCredenciales(entrada) {
-    return InicioSesionEsquema.safeParse(entrada);
-}
 
 export function ValidarEliminacionCuenta(entrada) {
   return CuentaEliminaciónEsquema.safeParse(entrada);

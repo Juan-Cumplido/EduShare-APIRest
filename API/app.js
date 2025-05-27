@@ -1,9 +1,10 @@
 import { CrearServidor } from "./src/server.js";
 import { ModeloAcceso } from "./src/api_rest/model/Acceso.js";
-import { ProbarConexion } from './src/api_rest/model/sql/ProbarConexion.js';
 import { ModeloCatalogo } from "./src/api_rest/model/ModeloCatalogo.js";
+import { ModeloSeguimiento } from "./src/api_rest/model/ModeloSeguimiento.js";
+import { ProbarConexion } from './src/api_rest/model/sql/ProbarConexion.js';
 
-CrearServidor({ModeloAcceso : ModeloAcceso, ModeloCatalogo:ModeloCatalogo});
+CrearServidor({ModeloAcceso : ModeloAcceso, ModeloCatalogo:ModeloCatalogo, ModeloSeguimiento:ModeloSeguimiento});
 
 await ProbarConexion();
 
