@@ -2,3 +2,5 @@
 /API/.env
 /API/logs
 /API/coverage
+/API/.scannerwork
+/API/.husky
