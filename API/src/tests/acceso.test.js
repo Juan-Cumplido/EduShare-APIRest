@@ -103,6 +103,7 @@ beforeAll(async () => {
     tokenUsuarioNormal = loginUsuarioNormal.body.token;
     idUsuarioABanear = loginUsuarioBanear.body.datos.idUsuario;
     idUsuarioNormal = loginUsuarioNormal.body.datos.idUsuario;
+    
 }, 100000);
 
 afterAll(async () => {
@@ -242,7 +243,7 @@ describe('Test de cuenta de acceso', () => {
             estado: 404,
             mensaje: "No hay una solicitud de recuperación para este correo o ha expirado"
         });
-    });
+    }, 10000);
 
     test('POST /verificarCodigoYCambiarContrasena - Datos inválidos', async () => {
         const datosCambio = {

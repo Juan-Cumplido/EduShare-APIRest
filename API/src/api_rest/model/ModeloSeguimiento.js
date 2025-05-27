@@ -1,16 +1,18 @@
 import sql from 'mssql';
 import { RetornarTipoDeConexion } from './sql/connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatos, MensajeDeRetornoBaseDeDatosConDatos } from '../utilidades/Constantes.js';
+import { MensajeDeRetornoBaseDeDatosAcceso,  MensajeDeRetornoBaseDeDatosCatalogo  } from '../utilidades/Constantes.js';
 
 export class ModeloSeguimiento {
-
-    static async SeguirUsuario({ idUsuarioSeguidor, idUsuarioSeguido }) {
-        let resultadoOperacion;
+ static async SeguirUsuario({ datos }) {
+        let resultadoSeguimiento;
         const ConfiguracionConexion = RetornarTipoDeConexion();
         let conexion;
-        
         try {
             conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                idUsuarioSeguidor,
+                idUsuarioSeguido
+            } = datos;
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
@@ -20,11 +22,7 @@ export class ModeloSeguimiento {
                 .output('mensaje', sql.NVarChar(200))
                 .execute('spi_SeguirUsuario');
 
-            resultadoOperacion = MensajeDeRetornoBaseDeDatos({
-                datos: ResultadoSolicitud.output
-            });
-
-            return resultadoOperacion;
+            resultadoSeguimiento = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
             throw error;
         } finally {
@@ -32,15 +30,19 @@ export class ModeloSeguimiento {
                 await sql.close();
             }
         }
+        return resultadoSeguimiento;
     }
 
-    static async DejarDeSeguirUsuario({ idUsuarioSeguidor, idUsuarioSeguido }) {
-        let resultadoOperacion;
+    static async DejarDeSeguirUsuario({ datos }) {
+        let resultadoDejarSeguir;
         const ConfiguracionConexion = RetornarTipoDeConexion();
         let conexion;
-        
         try {
             conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                idUsuarioSeguidor,
+                idUsuarioSeguido
+            } = datos;
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
@@ -50,11 +52,7 @@ export class ModeloSeguimiento {
                 .output('mensaje', sql.NVarChar(200))
                 .execute('spi_DejarDeSeguirUsuario');
 
-            resultadoOperacion = MensajeDeRetornoBaseDeDatos({
-                datos: ResultadoSolicitud.output
-            });
-
-            return resultadoOperacion;
+            resultadoDejarSeguir = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
             throw error;
         } finally {
@@ -62,15 +60,77 @@ export class ModeloSeguimiento {
                 await sql.close();
             }
         }
+        return resultadoDejarSeguir;
     }
 
-    static async VerificarSeguimiento({ idUsuarioSeguidor, idUsuarioSeguido }) {
+    static async ObtenerSeguidores({ datos }) {
+        let resultadoSeguidores;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const { idUsuario } = datos;
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idUsuario', sql.Int, idUsuario)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_ObtenerSeguidores');
+
+            resultadoSeguidores = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset 
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoSeguidores;
+    }
+
+    static async ObtenerSeguidos({ datos }) {
+        let resultadoSeguidos;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const { idUsuario } = datos;
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idUsuario', sql.Int, idUsuario)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_ObtenerSeguidos');
+
+            resultadoSeguidos = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset 
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoSeguidos;
+    }
+
+    static async VerificarSeguimiento({ datos }) {
         let resultadoVerificacion;
         const ConfiguracionConexion = RetornarTipoDeConexion();
         let conexion;
-        
         try {
             conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                idUsuarioSeguidor,
+                idUsuarioSeguido
+            } = datos;
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
@@ -78,15 +138,9 @@ export class ModeloSeguimiento {
                 .input('idUsuarioSeguido', sql.Int, idUsuarioSeguido)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('sps_VerificarSeguimiento');
+                .execute('spi_VerificarSeguimiento');
 
-            resultadoVerificacion = {
-                estado: ResultadoSolicitud.output.resultado,
-                mensaje: ResultadoSolicitud.output.mensaje,
-                siguiendo: ResultadoSolicitud.recordset.length > 0 ? ResultadoSolicitud.recordset[0].siguiendo : 0
-            };
-
-            return resultadoVerificacion;
+            resultadoVerificacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
             throw error;
         } finally {
@@ -94,67 +148,6 @@ export class ModeloSeguimiento {
                 await sql.close();
             }
         }
-    }
-
-    static async RecuperarSeguidores({ idUsuario }) {
-        let resultadoOperacion;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idUsuario', sql.Int, idUsuario)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('sps_RecuperarSeguidores');
-
-            resultadoOperacion = {
-                estado: ResultadoSolicitud.output.resultado,
-                mensaje: ResultadoSolicitud.output.mensaje,
-                datos: ResultadoSolicitud.recordset || []
-            };
-
-            return resultadoOperacion;
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-    }
-
-    static async RecuperarSeguidos({ idUsuario }) {
-        let resultadoOperacion;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idUsuario', sql.Int, idUsuario)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('sps_RecuperarSeguidos');
-
-            resultadoOperacion = {
-                estado: ResultadoSolicitud.output.resultado,
-                mensaje: ResultadoSolicitud.output.mensaje,
-                datos: ResultadoSolicitud.recordset || []
-            };
-
-            return resultadoOperacion;
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
+        return resultadoVerificacion;
     }
 }
