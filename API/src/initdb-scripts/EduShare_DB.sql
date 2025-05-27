@@ -66,7 +66,7 @@ GO
 CREATE TABLE Documento (
     idDocumento INT IDENTITY(1,1) PRIMARY KEY,
     titulo NVARCHAR(100) NOT NULL,
-    ruta VARBINARY(MAX) NOT NULL
+    ruta NVARCHAR(MAX) NOT NULL
 );
 GO
 
