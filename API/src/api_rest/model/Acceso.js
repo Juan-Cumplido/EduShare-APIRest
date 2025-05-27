@@ -33,7 +33,6 @@ export class ModeloAcceso {
                     const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
                     fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
                 } catch (error) {
-                    console.log('Error al cargar imagen por defecto:', error);
                     fotoPerfilBase64 = null; 
                 }
             } else {
@@ -59,8 +58,7 @@ export class ModeloAcceso {
 
             resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error en InsertarNuevaCuenta: ${error.message}`)
-            //logger({ mensaje: `Error en InsertarNuevaCuenta: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -85,8 +83,7 @@ export class ModeloAcceso {
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar recuperar la contraseña con el correo: ${error.message}`);
-            logger({ mensaje: `Error al intentar recuperar la contraseña con el correo: ${error.message}` });
+            throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -117,8 +114,7 @@ export class ModeloAcceso {
 
             resultadoCambio = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar cambiar la contraseña: ${error.message}`)
-            logger({ mensaje: `Error al intentar cambiar la contraseña: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -147,6 +143,10 @@ export class ModeloAcceso {
                 .output('idUsuarioRegistrado', sql.Int)
                 .output('nombre', sql.NVarChar(30))
                 .output('fotoPerfil', sql.NVarChar(sql.MAX))
+                .output('correo', sql.NVarChar(256))
+                .output('nombreUsuario', sql.NVarChar(15))
+                .output('primerApellido', sql.NVarChar(30))
+                .output('segundoApellido', sql.NVarChar(30))
                 .execute('spi_VerificarCredenciales');
 
             resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
@@ -156,13 +156,16 @@ export class ModeloAcceso {
                     datosAdicionales: {
                         idUsuarioRegistrado: ResultadoSolicitud.output.idUsuarioRegistrado || null,
                         nombre: ResultadoSolicitud.output.nombre || null, 
-                        fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null
+                        fotoPerfil: ResultadoSolicitud.output.fotoPerfil || null,
+                        correo: ResultadoSolicitud.output.correo || null,
+                        nombreUsuario: ResultadoSolicitud.output.nombreUsuario || null,
+                        primerApellido: ResultadoSolicitud.output.primerApellido || null,
+                        segundoApellido: ResultadoSolicitud.output.segundoApellido || null      
                     }
                 }
             });
         } catch (error) {
-            console.log(`Error al verificar credenciales: ${error.message}`);
-            logger({ mensaje: `Error al verificar credenciales: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -192,8 +195,7 @@ export class ModeloAcceso {
 
             resultadoEliminacion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-            console.log(`Error al intentar eliminar la cuenta: ${error.message}`);
-            logger({ mensaje: `Error al intentar eliminar la cuenta: ${error.message}` });
+             throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -201,4 +203,118 @@ export class ModeloAcceso {
         }
         return resultadoEliminacion;
     }   
-}
+
+    static async BanearUsuario({datos}){
+        let resultadoBaneo;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+
+            const {
+                idUsuarioRegistrado,
+                idAdministrador
+            } = datos;
+
+            const Solicitud = conexion.request();
+
+            const ResultadoSolicitud = await Solicitud 
+                .input('idUsuario', sql.Int, idUsuarioRegistrado)
+                .input('idAdministrador', sql.Int, idAdministrador)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_BanearUsuario');
+                
+            resultadoBaneo = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error){
+             throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoBaneo;
+    }
+
+    static async InsertarNuevaCuentaAdmin({ datos }) {
+        let resultadoInsercion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const {
+                correo,
+                contrasenia,
+                nombreUsuario, 
+                estado = 'Activo',
+                tipoAcceso = 'Administrador',
+                nombre,
+                primerApellido,
+                segundoApellido,
+                fotoPerfil,    
+                idInstitucion,
+            } = datos;
+
+            let fotoPerfilBase64
+            
+            if (!fotoPerfil) {
+                try {
+                    const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
+                    const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
+                    fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
+                } catch (error) {
+                    fotoPerfilBase64 = null; 
+                }
+            } else {
+                fotoPerfilBase64 = fotoPerfil.toString('base64');;
+            }
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('correo', sql.NVarChar(256), correo)
+                .input('contrasenia', sql.NVarChar(300), contrasenia)
+                .input('nombreUsuario', sql.NVarChar(15), nombreUsuario)
+                .input('estado', sql.NVarChar(10), estado)
+                .input('tipoAcceso', sql.NVarChar(20), tipoAcceso)
+                .input('nombre', sql.NVarChar(30), nombre)
+                .input('primerApellido', sql.NVarChar(30), primerApellido)
+                .input('segundoApellido', sql.NVarChar(30), segundoApellido)
+                .input('fotoPerfil', sql.NVarChar(sql.MAX), fotoPerfilBase64)
+                .input('idInstitucion', sql.Int, idInstitucion)
+
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spi_InsertarCuentaConUsuarioRegistrado');
+
+            resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
+        } catch (error) {
+             throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoInsercion;
+    }
+
+    static async VerificarAdmin({ idUsuario }) {
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud 
+                .input('idUsuario', sql.Int, idUsuario)
+                .query('SELECT tipoAcceso FROM Acceso WHERE idAcceso = @idUsuario');
+                
+            return ResultadoSolicitud.recordset[0] || null;
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+    }
+}   

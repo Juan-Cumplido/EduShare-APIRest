@@ -2,9 +2,10 @@ import express, { json } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
+import { CrearRutaCatalogo } from './api_rest/routes/Catalogo.js';
 
 
-export const CrearServidorTest = ({ModeloAcceso}) => {
+export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo}) => {
     const app = express();
     dotenv.config();
     app.use(json());
@@ -15,8 +16,8 @@ export const CrearServidorTest = ({ModeloAcceso}) => {
         res.json({message: 'Bienvenido al servidor de pruebas de EduShare-API'});
     });
 
-
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
+    app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
 
 
     const PUERTO = process.env.PUERTO_PRUEBAS;

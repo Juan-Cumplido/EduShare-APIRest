@@ -67,7 +67,6 @@ export class ModeloPublicacion {
                 .input('limite', sql.Int, limite)
                 .input('pagina', sql.Int, pagina);
             
-            // Agregar filtros solo si están definidos
             if (categoria) Solicitud.input('categoria', sql.NVarChar(25), categoria);
             if (nivelEducativo) Solicitud.input('nivelEducativo', sql.NVarChar(20), nivelEducativo);
             if (idRama) Solicitud.input('idRama', sql.Int, idRama);
