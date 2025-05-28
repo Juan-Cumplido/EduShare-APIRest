@@ -6,28 +6,27 @@ CREATE OR ALTER PROCEDURE spi_SeguirUsuario
 AS
 BEGIN
     SET NOCOUNT ON;
-    
     BEGIN TRY
         -- Verificar que ambos usuarios existen
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguidor)
         BEGIN
             SET @resultado = 404;
-            SET @mensaje = 'El usuario seguidor no existe';
+            SET @mensaje = 'El usuario seguidor no existe.';
             RETURN;
         END
         
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 404;
-            SET @mensaje = 'El usuario a seguir no existe';
+            SET @mensaje = 'El usuario a seguir no existe.';
             RETURN;
         END
         
-        -- Verificar que no se esté intentando seguir a sí mismo
+        -- Verificar que no se está intentando seguir a sí mismo
         IF @idUsuarioSeguidor = @idUsuarioSeguido
         BEGIN
             SET @resultado = 400;
-            SET @mensaje = 'No puedes seguirte a ti mismo';
+            SET @mensaje = 'No puedes seguirte a ti mismo.';
             RETURN;
         END
         
@@ -35,7 +34,7 @@ BEGIN
         IF EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 409;
-            SET @mensaje = 'Ya sigues a este usuario';
+            SET @mensaje = 'Ya sigues a este usuario.';
             RETURN;
         END
         
@@ -43,18 +42,17 @@ BEGIN
         INSERT INTO Seguidor (idUsuarioSeguidor, idUsuarioSeguido)
         VALUES (@idUsuarioSeguidor, @idUsuarioSeguido);
         
-        SET @resultado = 201;
-        SET @mensaje = 'Usuario seguido exitosamente';
-        
+        SET @resultado = 200;
+        SET @mensaje = 'Ahora sigues a este usuario.';
     END TRY
     BEGIN CATCH
         SET @resultado = 500;
         SET @mensaje = 'Error al seguir al usuario: ' + ERROR_MESSAGE();
-    END CATCH
-END
+    END CATCH;
+END;
 GO
 
--- Procedimiento almacenado para dejar de seguir a un usuario
+-- Procedimiento para dejar de seguir a un usuario
 CREATE OR ALTER PROCEDURE spi_DejarDeSeguirUsuario
     @idUsuarioSeguidor INT,
     @idUsuarioSeguido INT,
@@ -63,28 +61,12 @@ CREATE OR ALTER PROCEDURE spi_DejarDeSeguirUsuario
 AS
 BEGIN
     SET NOCOUNT ON;
-    
     BEGIN TRY
-        -- Verificar que ambos usuarios existen
-        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguidor)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'El usuario seguidor no existe';
-            RETURN;
-        END
-        
-        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguido)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'El usuario no existe';
-            RETURN;
-        END
-        
-        -- Verificar si existe la relación de seguimiento
+        -- Verificar que la relación de seguimiento existe
         IF NOT EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 404;
-            SET @mensaje = 'No sigues a este usuario';
+            SET @mensaje = 'No sigues a este usuario.';
             RETURN;
         END
         
@@ -93,17 +75,105 @@ BEGIN
         WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido;
         
         SET @resultado = 200;
-        SET @mensaje = 'Has dejado de seguir al usuario exitosamente';
-        
+        SET @mensaje = 'Has dejado de seguir a este usuario.';
     END TRY
     BEGIN CATCH
         SET @resultado = 500;
         SET @mensaje = 'Error al dejar de seguir al usuario: ' + ERROR_MESSAGE();
-    END CATCH
-END
+    END CATCH;
+END;
 GO
 
-CREATE OR ALTER PROCEDURE sps_VerificarSeguimiento
+-- Procedimiento para obtener los seguidores de un usuario
+CREATE OR ALTER PROCEDURE spi_ObtenerSeguidores
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Verificar que el usuario existe
+        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El usuario no existe.';
+            RETURN;
+        END
+        
+        -- Obtener los seguidores con información del usuario
+        SELECT 
+            ur.idUsuarioRegistrado,
+            ur.nombre,
+            ur.primerApellido,
+            ur.segundoApellido,
+            ur.fotoPerfil,
+            a.nombreUsuario,
+            i.nombreInstitucion,
+            i.nivelEducativo
+        FROM Seguidor s
+        INNER JOIN UsuarioRegistrado ur ON s.idUsuarioSeguidor = ur.idUsuarioRegistrado
+        INNER JOIN Acceso a ON ur.idAcceso = a.idAcceso
+        INNER JOIN Institucion i ON ur.idInstitucion = i.idInstitucion
+        WHERE s.idUsuarioSeguido = @idUsuario
+        ORDER BY ur.nombre, ur.primerApellido;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Seguidores obtenidos exitosamente.';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al obtener los seguidores: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- Procedimiento para obtener los usuarios seguidos por un usuario
+CREATE OR ALTER PROCEDURE spi_ObtenerSeguidos
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Verificar que el usuario existe
+        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El usuario no existe.';
+            RETURN;
+        END
+        
+        -- Obtener los usuarios seguidos con información del usuario
+        SELECT 
+            ur.idUsuarioRegistrado,
+            ur.nombre,
+            ur.primerApellido,
+            ur.segundoApellido,
+            ur.fotoPerfil,
+            a.nombreUsuario,
+            i.nombreInstitucion,
+            i.nivelEducativo
+        FROM Seguidor s
+        INNER JOIN UsuarioRegistrado ur ON s.idUsuarioSeguido = ur.idUsuarioRegistrado
+        INNER JOIN Acceso a ON ur.idAcceso = a.idAcceso
+        INNER JOIN Institucion i ON ur.idInstitucion = i.idInstitucion
+        WHERE s.idUsuarioSeguidor = @idUsuario
+        ORDER BY ur.nombre, ur.primerApellido;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Usuarios seguidos obtenidos exitosamente.';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al obtener los usuarios seguidos: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- Procedimiento para verificar si un usuario sigue a otro
+CREATE OR ALTER PROCEDURE spi_VerificarSeguimiento
     @idUsuarioSeguidor INT,
     @idUsuarioSeguido INT,
     @resultado INT OUTPUT,
@@ -111,22 +181,19 @@ CREATE OR ALTER PROCEDURE sps_VerificarSeguimiento
 AS
 BEGIN
     SET NOCOUNT ON;
-    
     BEGIN TRY
-        -- Verificar que ambos usuarios existan
+        -- Verificar que ambos usuarios existen
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguidor)
         BEGIN
             SET @resultado = 404;
             SET @mensaje = 'El usuario seguidor no existe.';
-            SELECT 0 AS siguiendo;
             RETURN;
         END
         
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 404;
-            SET @mensaje = 'El usuario a verificar no existe.';
-            SELECT 0 AS siguiendo;
+            SET @mensaje = 'El usuario consultado no existe.';
             RETURN;
         END
         
@@ -134,138 +201,17 @@ BEGIN
         IF EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 200;
-            SET @mensaje = 'El usuario sigue a la persona especificada.';
-            SELECT 1 AS siguiendo;
+            SET @mensaje = 'El usuario está siendo seguido.';
         END
         ELSE
         BEGIN
-            SET @resultado = 200;
-            SET @mensaje = 'El usuario no sigue a la persona especificada.';
-            SELECT 0 AS siguiendo;
+            SET @resultado = 404;
+            SET @mensaje = 'El usuario no está siendo seguido.';
         END
     END TRY
     BEGIN CATCH
         SET @resultado = 500;
         SET @mensaje = 'Error al verificar el seguimiento: ' + ERROR_MESSAGE();
-        SELECT 0 AS siguiendo;
-    END CATCH
-END
-GO
-
--- Procedimiento para obtener la lista de seguidores de un usuario
-CREATE OR ALTER PROCEDURE sps_RecuperarSeguidores
-    @idUsuario INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    BEGIN TRY
-        -- Verificar que el usuario exista
-        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'El usuario especificado no existe.';
-            SELECT 
-                0 AS idUsuarioRegistrado,
-                '' AS nombre,
-                '' AS primerApellido,
-                '' AS segundoApellido,
-                '' AS nombreUsuario,
-                '' AS fotoPerfil
-            WHERE 1 = 0; -- Retorna estructura vacía
-            RETURN;
-        END
-        
-        -- Obtener lista de seguidores
-        SELECT 
-            ur.idUsuarioRegistrado,
-            ur.nombre,
-            ur.primerApellido,
-            ur.segundoApellido,
-            a.nombreUsuario,
-            ur.fotoPerfil
-        FROM Seguidor s
-        INNER JOIN UsuarioRegistrado ur ON s.idUsuarioSeguidor = ur.idUsuarioRegistrado
-        INNER JOIN Acceso a ON ur.idAcceso = a.idAcceso
-        WHERE s.idUsuarioSeguido = @idUsuario
-        ORDER BY ur.nombre, ur.primerApellido;
-        
-        SET @resultado = 200;
-        SET @mensaje = 'Seguidores recuperados exitosamente.';
-        
-    END TRY
-    BEGIN CATCH
-        SET @resultado = 500;
-        SET @mensaje = 'Error al recuperar los seguidores: ' + ERROR_MESSAGE();
-        SELECT 
-            0 AS idUsuarioRegistrado,
-            '' AS nombre,
-            '' AS primerApellido,
-            '' AS segundoApellido,
-            '' AS nombreUsuario,
-            '' AS fotoPerfil
-        WHERE 1 = 0; -- Retorna estructura vacía en caso de error
-    END CATCH
-END
-GO
-
--- Procedimiento para obtener la lista de usuarios seguidos por un usuario
-CREATE OR ALTER PROCEDURE sps_RecuperarSeguidos
-    @idUsuario INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    BEGIN TRY
-        -- Verificar que el usuario exista
-        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'El usuario especificado no existe.';
-            SELECT 
-                0 AS idUsuarioRegistrado,
-                '' AS nombre,
-                '' AS primerApellido,
-                '' AS segundoApellido,
-                '' AS nombreUsuario,
-                '' AS fotoPerfil
-            WHERE 1 = 0; -- Retorna estructura vacía
-            RETURN;
-        END
-        
-        -- Obtener lista de usuarios seguidos
-        SELECT 
-            ur.idUsuarioRegistrado,
-            ur.nombre,
-            ur.primerApellido,
-            ur.segundoApellido,
-            a.nombreUsuario,
-            ur.fotoPerfil
-        FROM Seguidor s
-        INNER JOIN UsuarioRegistrado ur ON s.idUsuarioSeguido = ur.idUsuarioRegistrado
-        INNER JOIN Acceso a ON ur.idAcceso = a.idAcceso
-        WHERE s.idUsuarioSeguidor = @idUsuario
-        ORDER BY ur.nombre, ur.primerApellido;
-        
-        SET @resultado = 200;
-        SET @mensaje = 'Usuarios seguidos recuperados exitosamente.';
-        
-    END TRY
-    BEGIN CATCH
-        SET @resultado = 500;
-        SET @mensaje = 'Error al recuperar los usuarios seguidos: ' + ERROR_MESSAGE();
-        SELECT 
-            0 AS idUsuarioRegistrado,
-            '' AS nombre,
-            '' AS primerApellido,
-            '' AS segundoApellido,
-            '' AS nombreUsuario,
-            '' AS fotoPerfil
-        WHERE 1 = 0; -- Retorna estructura vacía en caso de error
-    END CATCH
-END
+    END CATCH;
+END;
 GO

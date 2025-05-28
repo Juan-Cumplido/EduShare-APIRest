@@ -1,4 +1,3 @@
--- Login
 CREATE OR ALTER PROCEDURE spi_VerificarCredenciales
     @identifier NVARCHAR(256),      
     @contrasenia NVARCHAR(300),
@@ -6,7 +5,7 @@ CREATE OR ALTER PROCEDURE spi_VerificarCredenciales
     @mensaje NVARCHAR(200) OUTPUT,
     @idUsuarioRegistrado INT OUTPUT,
     @nombre NVARCHAR(30) OUTPUT,
-    @fotoPerfil NVARCHAR(MAX) OUTPUT
+    @fotoPerfil NVARCHAR(MAX) OUTPUT,
     @correo NVARCHAR(256) OUTPUT,
     @nombreUsuario NVARCHAR(15) OUTPUT,
     @primerApellido NVARCHAR(30) OUTPUT,
@@ -49,7 +48,7 @@ BEGIN
         SELECT 
             @idUsuarioRegistrado = ur.idUsuarioRegistrado,
             @nombre = ur.nombre,
-            @fotoPerfil = ur.fotoPerfil
+            @fotoPerfil = ur.fotoPerfil,
             @primerApellido = ur.primerApellido,
             @segundoApellido = ur.segundoApellido
         FROM UsuarioRegistrado ur
