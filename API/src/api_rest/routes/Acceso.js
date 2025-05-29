@@ -8,13 +8,13 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
 
     router.post('/registro', ControladorAcceso.RegistrarAcceso);
 
+    router.post('/login', ControladorAcceso.VerificarCredenciales);
+
     router.post('/registroAdmin', ControladorAcceso.RegistrarAccesoAdmin);
 
     router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena);
 
     router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena);
-
-    router.post('/login', ControladorAcceso.VerificarCredenciales);
 
     router.post('/eliminar', ControladorAcceso.EliminarCuenta);
 

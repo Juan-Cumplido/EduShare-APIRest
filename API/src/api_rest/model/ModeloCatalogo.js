@@ -15,7 +15,7 @@ export class ModeloCatalogo {
             const ResultadoSolicitud  = await Solicitud
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarCategorias');
+                .execute('sps_RecuperarCategorias');
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,
@@ -43,7 +43,7 @@ export class ModeloCatalogo {
             const ResultadoSolicitud = await Solicitud
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarRamas')
+                .execute('sps_RecuperarRamas')
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({
                 datos: ResultadoSolicitud.output,
@@ -71,7 +71,7 @@ export class ModeloCatalogo {
             const ResultadoSolicitud = await Solicitud
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarMaterias')
+                .execute('sps_RecuperarMaterias')
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,
@@ -99,7 +99,7 @@ export class ModeloCatalogo {
                 .input('idRama', sql.Int, idRama)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('spi_RecuperarMateriasPorRama')
+                .execute('sps_RecuperarMateriasPorRama')
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,

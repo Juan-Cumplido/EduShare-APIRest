@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package fileservice;
+
+service FileService {
+  rpc UploadImage (UploadRequest) returns (UploadResponse);
+  rpc UploadPdf (UploadRequest) returns (UploadResponse);
+  rpc DownloadFile (DownloadRequest) returns (DownloadResponse);
+}
+
+message UploadRequest {
+  string username = 1;
+  string filename = 2;
+  bytes filedata = 3;
+}
+
+message UploadResponse {
+  string file_path = 1;
+  string cover_image_path = 2; 
+}
+
+message DownloadRequest {
+  string relative_path = 1;
+}
+
+message DownloadResponse {
+  bytes filedata = 1;
+  string filename = 2;
+}
