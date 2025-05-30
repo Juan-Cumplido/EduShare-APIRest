@@ -20,3 +20,4 @@ export const CrearRutaSeguimiento = ({ ModeloSeguimiento }) => {
 
     return router;
 }
+

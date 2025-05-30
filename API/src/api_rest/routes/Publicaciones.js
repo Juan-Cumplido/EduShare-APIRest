@@ -1,20 +1,19 @@
 import express from 'express';
 import {PublicacionControlador} from '../controllers/PublicacionControlador.js';
+import { ValidarJwt } from '../middlewares/jwt.js';
+import { ValidarAdminOPropietario } from '../middlewares/ValidarAdminOPropietario.js';
+
 
 export const CrearRutaPublicacion = ({ ModeloPublicacion }) => {
     const router = express.Router();
-    const controladorPublicacion = new PublicacionControlador({ ModeloPublicacion });
+    const ControladorPublicacion = new PublicacionControlador({ ModeloPublicacion });
 
- 
-    router.post('/', controladorPublicacion.CrearPublicacion);
+    router.post('/',ValidarJwt, ControladorPublicacion.CrearPublicacion);
+    router.put('/:id', ControladorPublicacion.ActualizarPublicacion);
+    router.delete('/:id', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'id'), ControladorPublicacion.EliminarPublicacion);
 
-    router.get('/', controladorPublicacion.ObtenerPublicaciones);
-
-    router.get('/:id', controladorPublicacion.ObtenerPublicacionPorId);
-
-    router.put('/:id', controladorPublicacion.ActualizarPublicacion);
-
-    router.delete('/:id', controladorPublicacion.EliminarPublicacion);
+    router.get('/', ControladorPublicacion.ObtenerPublicaciones);
+    router.get('/:id', ControladorPublicacion.ObtenerPublicacionPorId);
 
     return router;
 }

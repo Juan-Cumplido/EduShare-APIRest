@@ -1,12 +1,11 @@
 -- Procedimiento almacenado para insertar una nueva publicación
-CREATE PROCEDURE spi_InsertarPublicacion
-    @categoria NVARCHAR(25),
+CREATE OR ALTER PROCEDURE spi_InsertarPublicacion
+    @idCategoria INT,
     @resuContenido NVARCHAR(200),
     @estado NVARCHAR(20),
     @nivelEducativo NVARCHAR(20),
     @idUsuarioRegistrado INT,
-    @idRama INT,
-    @idMateria INT,
+    @idMateriaYRama INT,
     @idDocumento INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT,
@@ -17,7 +16,6 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Verificar si existe el usuario registrado
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioRegistrado)
         BEGIN
             SET @resultado = 404;
@@ -25,23 +23,13 @@ BEGIN
             RETURN;
         END
 
-        -- Verificar si existe la rama
-        IF NOT EXISTS (SELECT 1 FROM Rama WHERE idRama = @idRama)
+        IF NOT EXISTS (SELECT 1 FROM MateriaYRama WHERE idMateriaYRama = @idMateriaYRama)
         BEGIN
             SET @resultado = 404;
-            SET @mensaje = 'La rama no existe';
+            SET @mensaje = 'La materia en esa rama o la rama no existe';
             RETURN;
         END
 
-        -- Verificar si existe la materia
-        IF NOT EXISTS (SELECT 1 FROM Materia WHERE idMateria = @idMateria)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'La materia no existe';
-            RETURN;
-        END
-
-        -- Verificar si existe el documento
         IF NOT EXISTS (SELECT 1 FROM Documento WHERE idDocumento = @idDocumento)
         BEGIN
             SET @resultado = 404;
@@ -49,9 +37,8 @@ BEGIN
             RETURN;
         END
 
-        -- Insertar la publicación
         INSERT INTO Publicacion (
-            categoria, 
+            idCategoria, 
             fecha, 
             resuContenido, 
             estado, 
@@ -60,12 +47,11 @@ BEGIN
             numeroVisualizaciones, 
             numeroDescargas, 
             idUsuarioRegistrado, 
-            idRama, 
-            idMateria, 
+            idMateriaYRama, 
             idDocumento
         )
         VALUES (
-            @categoria, 
+            @idCategoria, 
             GETDATE(), 
             @resuContenido, 
             @estado, 
@@ -74,13 +60,12 @@ BEGIN
             0, -- Inicializar número de visualizaciones en 0
             0, -- Inicializar número de descargas en 0
             @idUsuarioRegistrado, 
-            @idRama, 
-            @idMateria, 
+            @idMateriaYRama, 
             @idDocumento
         );
 
         SET @idPublicacion = SCOPE_IDENTITY();
-        SET @resultado = 201; -- Código HTTP Created
+        SET @resultado = 201;
         SET @mensaje = 'Publicación creada exitosamente';
 
         COMMIT TRANSACTION;
@@ -94,8 +79,43 @@ BEGIN
 END
 GO
 
+-- Procedimiento almacenado para eliminar una publicación
+CREATE OR ALTER PROCEDURE spd_EliminarPublicacion
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+
+        DELETE FROM Comentario WHERE idPublicacion = @idPublicacion;
+
+        DELETE FROM Publicacion WHERE idPublicacion = @idPublicacion;
+
+        SET @resultado = 200;
+        SET @mensaje = 'Publicación eliminada exitosamente';
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @resultado = 500;
+        SET @mensaje = ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
 -- Procedimiento almacenado para obtener publicaciones con paginación y filtros
-CREATE PROCEDURE sps_ObtenerPublicaciones
+CREATE OR ALTER PROCEDURE sps_ObtenerPublicaciones
     @limite INT = 10,
     @pagina INT = 1,
     @categoria NVARCHAR(25) = NULL,
@@ -160,7 +180,7 @@ END
 GO
 
 -- Procedimiento almacenado para obtener una publicación por su ID
-CREATE PROCEDURE sps_ObtenerPublicacionPorId
+CREATE OR ALTER PROCEDURE sps_ObtenerPublicacionPorId
     @idPublicacion INT
 AS
 BEGIN
@@ -200,7 +220,7 @@ END
 GO
 
 -- Procedimiento almacenado para actualizar una publicación
-CREATE PROCEDURE spu_ActualizarPublicacion
+CREATE OR ALTER PROCEDURE spu_ActualizarPublicacion
     @idPublicacion INT,
     @categoria NVARCHAR(25),
     @resuContenido NVARCHAR(200),
@@ -265,46 +285,9 @@ BEGIN
 END
 GO
 
--- Procedimiento almacenado para eliminar una publicación
-CREATE PROCEDURE spd_EliminarPublicacion
-    @idPublicacion INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        -- Verificar si existe la publicación
-        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'La publicación no existe';
-            RETURN;
-        END
-
-        -- Primero eliminar registros relacionados en Comentario
-        DELETE FROM Comentario WHERE idPublicacion = @idPublicacion;
-
-        -- Luego eliminar la publicación
-        DELETE FROM Publicacion WHERE idPublicacion = @idPublicacion;
-
-        SET @resultado = 200;
-        SET @mensaje = 'Publicación eliminada exitosamente';
-
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SET @resultado = 500;
-        SET @mensaje = ERROR_MESSAGE();
-    END CATCH
-END
-GO
 
 -- Procedimiento almacenado para incrementar el contador de visualizaciones
-CREATE PROCEDURE spu_IncrementarVisualizacion
+CREATE OR ALTER PROCEDURE spu_IncrementarVisualizacion
     @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -341,7 +324,7 @@ END
 GO
 
 -- Procedimiento almacenado para incrementar el contador de descargas
-CREATE PROCEDURE spu_IncrementarDescarga
+CREATE OR ALTER PROCEDURE spu_IncrementarDescarga
     @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -378,7 +361,7 @@ END
 GO
 
 -- Procedimiento almacenado para incrementar el contador de likes
-CREATE PROCEDURE spu_IncrementarLike
+CREATE OR ALTER PROCEDURE spu_IncrementarLike
     @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -411,5 +394,35 @@ BEGIN
         SET @resultado = 500;
         SET @mensaje = ERROR_MESSAGE();
     END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdminoPropietario
+    @idUsuarioRegistrado INT,
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+    BEGIN 
+        SET @resultado = 404;
+        SET @mensaje = 'La publicación no existe';
+        RETURN;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM Publicacion 
+        WHERE idPublicacion = @idPublicacion AND idUsuario = @idUsuarioRegistrado
+    )
+    BEGIN
+        SET @resultado = 200;
+        SET @mensaje = 'El usuario es el propietario de la publicación';
+    END
+    ELSE
+    BEGIN
+        SET @resultado = 403;
+        SET @mensaje = 'El usuario no es el propietario de la publicación';
+    END
 END
 GO
