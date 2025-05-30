@@ -37,11 +37,9 @@ beforeAll(async () => {
     servidor = servidorCreado;
     app = appCreada;
     
-    // Registrar usuarios
     await request(servidor).post("/edushare/acceso/registro").send(usuarioA);
     await request(servidor).post("/edushare/acceso/registro").send(usuarioB);
 
-    // Obtener tokens e IDs
     const loginA = await request(app)
         .post("/edushare/acceso/login")
         .send({ identifier: usuarioA.correo, contrasenia: usuarioA.contrasenia });
@@ -153,7 +151,6 @@ describe('Pruebas de seguimiento de usuarios', () => {
     });
 
     test('Debería dejar de seguir exitosamente', async () => {
-        // Primero seguir al usuario para asegurar la relación
         await request(app)
             .post("/edushare/seguimiento/seguir")
             .set('Authorization', `Bearer ${tokenUsuarioA}`)
