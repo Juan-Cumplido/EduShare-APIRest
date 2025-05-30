@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import {request,response} from 'express';
 import { logger } from '../utilidades/logger.js';
 
-export const ValidarJwt = (request,response, next) =>
+export const ValidarJwt = (request, response, next) =>
 {
     try
     {
@@ -11,8 +11,9 @@ export const ValidarJwt = (request,response, next) =>
             ? HeaderAutenticacion.split(' ')[1]
             : null;
         if(Token) {
-                const payload = jwt.verify(Token,process.env.SECRETO_JWT);
-                request.idUsuario = payload.idUsuario;;
+                const payload = jwt.verify(Token, process.env.SECRETO_JWT);
+                request.idUsuario = payload.idUsuario
+                request.tipoUsuario = payload.tipoUsuario
                 next();
         } else {
             response.status(401).json({

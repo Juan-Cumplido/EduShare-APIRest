@@ -1,6 +1,6 @@
 import sql from 'mssql';
 import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatos } from '../../utilidades/Constantes.js';
+import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso } from '../../utilidades/Constantes.js';
 
 export class ModeloPublicacion {
 
@@ -16,32 +16,31 @@ export class ModeloPublicacion {
                 estado,
                 nivelEducativo,
                 idUsuarioRegistrado,
-                idRama,
-                idMateria,
+                idMateriaYRama,
                 idDocumento
             } = datos;
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
-                .input('categoria', sql.NVarChar(25), categoria)
+                .input('categoria', sql.Int, categoria)
                 .input('resuContenido', sql.NVarChar(200), resuContenido)
                 .input('estado', sql.NVarChar(20), estado)
                 .input('nivelEducativo', sql.NVarChar(20), nivelEducativo)
                 .input('idUsuarioRegistrado', sql.Int, idUsuarioRegistrado)
-                .input('idRama', sql.Int, idRama)
-                .input('idMateria', sql.Int, idMateria)
+                .input('idMateriaYRama', sql.Int, idMateriaYRama)
                 .input('idDocumento', sql.Int, idDocumento)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
                 .output('idPublicacion', sql.Int)
                 .execute('spi_InsertarPublicacion');
 
-            resultadoInsercion = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output,
-                datosAdicionales: {
-                    idPublicacion: ResultadoSolicitud.output.idPublicacion
-                }
-            });
+                resultadoInsercion = MensajeRetornoBDId({
+                    datos: {
+                        resultado: ResultadoSolicitud.output.resultado,
+                        mensaje: ResultadoSolicitud.output.mensaje,
+                        id: ResultadoSolicitud.output.idPublicacion
+                    }
+                });
         } catch (error) {
             throw error;
         } finally {
@@ -80,32 +79,6 @@ export class ModeloPublicacion {
                     ? ResultadoSolicitud.recordset[0].totalRegistros 
                     : 0
             };
-            
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultado;
-    }
-
-    static async obtenerPublicacionPorId(idPublicacion) {
-        let resultado;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .execute('sps_ObtenerPublicacionPorId');
-            
-            resultado = ResultadoSolicitud.recordset.length > 0 
-                ? ResultadoSolicitud.recordset[0] 
-                : null;
             
         } catch (error) {
             throw error;
@@ -260,10 +233,43 @@ export class ModeloPublicacion {
         } catch (error) {
             throw error;
         } finally {
-            if (conexion) {
+        if (conexion) {
                 await sql.close();
             }
         }
         return resultadoIncrementar;
+    }
+
+    static async EsDueño(idPublicacion, idUsuarioRegistrado) {
+        let resultado;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idPublicacion', sql.Int, idPublicacion)
+                .input('idUsuarioRegistrado', sql.Int, idUsuarioRegistrado)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_verificarUsuarioAdminoPropietario')
+
+            resultado = MensajeDeRetornoBaseDeDatosAcceso({
+                datos: ResultadoSolicitud.output
+            })
+
+            if (resultado.resultado == 200){
+                return true 
+            } else {
+                return false
+            }
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
     }
 }
