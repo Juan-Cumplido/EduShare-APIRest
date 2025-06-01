@@ -1,5 +1,6 @@
-import { ModeloAcceso } from '../models/ModeloAcceso.js';
+import { ModeloAcceso } from '../model/Acceso.js';
 import { logger } from '../utilidades/logger.js';
+
 
 export const ValidarAdmin = async (req, res, next) => {
     try {
