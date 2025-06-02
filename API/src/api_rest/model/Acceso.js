@@ -21,22 +21,11 @@ export class ModeloAcceso {
                 nombre,
                 primerApellido,
                 segundoApellido,
-                fotoPerfil,
+                fotoPerfil,  
                 idInstitucion,
             } = datos;
 
-            let fotoPerfilBuffer;
-
-            if (!fotoPerfil) {
-                try {
-                    const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
-                    fotoPerfilBuffer = await fs.readFile(defaultImagePath);
-                } catch (error) {
-                    fotoPerfilBuffer = null; 
-                }
-            } else {
-                fotoPerfilBuffer = await fs.readFile(fotoPerfil);
-            }
+            const rutaFotoPerfil = fotoPerfil || path.join('resources', 'imagen-por-defecto.jpg');
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
@@ -48,7 +37,7 @@ export class ModeloAcceso {
                 .input('nombre', sql.NVarChar(30), nombre)
                 .input('primerApellido', sql.NVarChar(30), primerApellido)
                 .input('segundoApellido', sql.NVarChar(30), segundoApellido)
-                .input('fotoPerfil', sql.VarBinary(sql.MAX), fotoPerfilBuffer) // 🚀 binario
+                .input('fotoPerfil', sql.NVarChar(sql.MAX), rutaFotoPerfil) 
                 .input('idInstitucion', sql.Int, idInstitucion)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
@@ -64,7 +53,6 @@ export class ModeloAcceso {
         }
         return resultadoInsercion;
     }
-
 
     static async RecuperarContrasena({ correo }) {
         let resultadoRecuperacion;
