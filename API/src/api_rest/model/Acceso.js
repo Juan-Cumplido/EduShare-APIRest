@@ -15,28 +15,27 @@ export class ModeloAcceso {
             const {
                 correo,
                 contrasenia,
-                nombreUsuario, 
+                nombreUsuario,
                 estado = 'Activo',
                 tipoAcceso = 'Registrado',
                 nombre,
                 primerApellido,
                 segundoApellido,
-                fotoPerfil,    
+                fotoPerfil,
                 idInstitucion,
             } = datos;
 
-            let fotoPerfilBase64
-            
+            let fotoPerfilBuffer;
+
             if (!fotoPerfil) {
                 try {
                     const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
-                    const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
-                    fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
+                    fotoPerfilBuffer = await fs.readFile(defaultImagePath);
                 } catch (error) {
-                    fotoPerfilBase64 = null; 
+                    fotoPerfilBuffer = null; 
                 }
             } else {
-                fotoPerfilBase64 = fotoPerfil.toString('base64');;
+                fotoPerfilBuffer = await fs.readFile(fotoPerfil);
             }
 
             const Solicitud = conexion.request();
@@ -49,16 +48,15 @@ export class ModeloAcceso {
                 .input('nombre', sql.NVarChar(30), nombre)
                 .input('primerApellido', sql.NVarChar(30), primerApellido)
                 .input('segundoApellido', sql.NVarChar(30), segundoApellido)
-                .input('fotoPerfil', sql.NVarChar(sql.MAX), fotoPerfilBase64)
+                .input('fotoPerfil', sql.VarBinary(sql.MAX), fotoPerfilBuffer) // 🚀 binario
                 .input('idInstitucion', sql.Int, idInstitucion)
-
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
                 .execute('spi_InsertarCuentaConUsuarioRegistrado');
 
             resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-             throw error;
+            throw error;
         } finally {
             if (conexion) {
                 await sql.close();
@@ -66,6 +64,7 @@ export class ModeloAcceso {
         }
         return resultadoInsercion;
     }
+
 
     static async RecuperarContrasena({ correo }) {
         let resultadoRecuperacion;
