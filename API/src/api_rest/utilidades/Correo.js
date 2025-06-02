@@ -1,8 +1,8 @@
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 
-export const EnviarCorreoDeVerificacion = async(plantilla,correo,codigo) =>
-{
+export const EnviarCorreoDeVerificacion = async(plantilla,correo,codigo) =>{
+
     const HTML = CargarPlantilla(plantilla, {CODIGO: codigo});
     const Transportador = nodemailer.createTransport({
         service: 'gmail',
