@@ -15,29 +15,17 @@ export class ModeloAcceso {
             const {
                 correo,
                 contrasenia,
-                nombreUsuario, 
+                nombreUsuario,
                 estado = 'Activo',
                 tipoAcceso = 'Registrado',
                 nombre,
                 primerApellido,
                 segundoApellido,
-                fotoPerfil,    
+                fotoPerfil,  
                 idInstitucion,
             } = datos;
 
-            let fotoPerfilBase64
-            
-            if (!fotoPerfil) {
-                try {
-                    const defaultImagePath = path.join(process.cwd(), 'resources', 'imagen-por-defecto.jpg');
-                    const fotoPerfilBuffer = await fs.readFile(defaultImagePath);
-                    fotoPerfilBase64 = fotoPerfilBuffer.toString('base64')
-                } catch (error) {
-                    fotoPerfilBase64 = null; 
-                }
-            } else {
-                fotoPerfilBase64 = fotoPerfil.toString('base64');;
-            }
+            const rutaFotoPerfil = fotoPerfil || path.join('resources', 'imagen-por-defecto.jpg');
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
@@ -49,16 +37,15 @@ export class ModeloAcceso {
                 .input('nombre', sql.NVarChar(30), nombre)
                 .input('primerApellido', sql.NVarChar(30), primerApellido)
                 .input('segundoApellido', sql.NVarChar(30), segundoApellido)
-                .input('fotoPerfil', sql.NVarChar(sql.MAX), fotoPerfilBase64)
+                .input('fotoPerfil', sql.NVarChar(sql.MAX), rutaFotoPerfil) 
                 .input('idInstitucion', sql.Int, idInstitucion)
-
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
                 .execute('spi_InsertarCuentaConUsuarioRegistrado');
 
             resultadoInsercion = MensajeDeRetornoBaseDeDatosAcceso({ datos: ResultadoSolicitud.output });
         } catch (error) {
-             throw error;
+            throw error;
         } finally {
             if (conexion) {
                 await sql.close();
