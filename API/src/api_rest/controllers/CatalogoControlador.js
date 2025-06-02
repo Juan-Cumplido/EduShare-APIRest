@@ -99,7 +99,7 @@ export class CatalogoControlador{
             return res.status(resultado.resultado).json(resultado);
             
         } catch (error) {
-            console.error('Error al recuperar instituciones:', error);
+            logger({ mensaje: `Error en RecuperacionMaterias ${error}` })
             return res.status(500).json({
                 resultado: 500,
                 mensaje: 'Error interno del servidor'

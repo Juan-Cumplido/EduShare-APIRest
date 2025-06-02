@@ -7,7 +7,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        -- Verificar que ambos usuarios existen
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguidor)
         BEGIN
             SET @resultado = 404;
@@ -22,7 +21,6 @@ BEGIN
             RETURN;
         END
         
-        -- Verificar que no se está intentando seguir a sí mismo
         IF @idUsuarioSeguidor = @idUsuarioSeguido
         BEGIN
             SET @resultado = 400;
@@ -30,7 +28,6 @@ BEGIN
             RETURN;
         END
         
-        -- Verificar si ya existe la relación de seguimiento
         IF EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 409;
@@ -38,7 +35,6 @@ BEGIN
             RETURN;
         END
         
-        -- Insertar la relación de seguimiento
         INSERT INTO Seguidor (idUsuarioSeguidor, idUsuarioSeguido)
         VALUES (@idUsuarioSeguidor, @idUsuarioSeguido);
         
@@ -62,7 +58,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        -- Verificar que la relación de seguimiento existe
         IF NOT EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 404;
@@ -70,7 +65,6 @@ BEGIN
             RETURN;
         END
         
-        -- Eliminar la relación de seguimiento
         DELETE FROM Seguidor 
         WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido;
         
@@ -93,7 +87,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        -- Verificar que el usuario existe
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
         BEGIN
             SET @resultado = 404;
@@ -101,7 +94,6 @@ BEGIN
             RETURN;
         END
         
-        -- Obtener los seguidores con información del usuario
         SELECT 
             ur.idUsuarioRegistrado,
             ur.nombre,
@@ -137,7 +129,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        -- Verificar que el usuario existe
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuario)
         BEGIN
             SET @resultado = 404;
@@ -145,7 +136,6 @@ BEGIN
             RETURN;
         END
         
-        -- Obtener los usuarios seguidos con información del usuario
         SELECT 
             ur.idUsuarioRegistrado,
             ur.nombre,
@@ -182,7 +172,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        -- Verificar que ambos usuarios existen
         IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioSeguidor)
         BEGIN
             SET @resultado = 404;
@@ -197,7 +186,6 @@ BEGIN
             RETURN;
         END
         
-        -- Verificar si existe la relación de seguimiento
         IF EXISTS (SELECT 1 FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioSeguidor AND idUsuarioSeguido = @idUsuarioSeguido)
         BEGIN
             SET @resultado = 200;

@@ -145,7 +145,7 @@ GO
 
 -- Procedimiento almacenado para recuperar Instituciones
 CREATE OR ALTER PROCEDURE sps_RecuperarInstituciones
-    @nivelEducativo NVARCHAR(20) = NULL, -- Parámetro opcional para filtrar por nivel
+    @nivelEducativo NVARCHAR(20) = NULL,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
 AS

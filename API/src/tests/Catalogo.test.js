@@ -51,7 +51,7 @@ describe('GET /catalogo/categorias - Recuperar Categorías', () => {
     });
 });
 
-    describe('GET /catalogo/materias - Recuperar Materias', () => {
+describe('GET /catalogo/materias - Recuperar Materias', () => {
     test('Debe recuperar todas las materias exitosamente', async () => {
         const res = await request(app)
             .get("/edushare/catalogo/materias")

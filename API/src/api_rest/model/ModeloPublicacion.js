@@ -1,6 +1,7 @@
 import sql from 'mssql';
-import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso } from '../../utilidades/Constantes.js';
+import { logger } from "../utilidades/logger.js";
+import { RetornarTipoDeConexion } from './sql/connection/ConfiguracionConexion.js';
+import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso } from '../utilidades/Constantes.js';
 
 export class ModeloPublicacion {
 
@@ -11,7 +12,7 @@ export class ModeloPublicacion {
         try {
             conexion = await sql.connect(ConfiguracionConexion);
             const {
-                categoria,
+                idCategoria,
                 resuContenido,
                 estado,
                 nivelEducativo,
@@ -22,7 +23,7 @@ export class ModeloPublicacion {
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
-                .input('categoria', sql.Int, categoria)
+                .input('idCategoria', sql.Int, idCategoria)
                 .input('resuContenido', sql.NVarChar(200), resuContenido)
                 .input('estado', sql.NVarChar(20), estado)
                 .input('nivelEducativo', sql.NVarChar(20), nivelEducativo)
@@ -34,6 +35,12 @@ export class ModeloPublicacion {
                 .output('idPublicacion', sql.Int)
                 .execute('spi_InsertarPublicacion');
 
+                console.log('Resultados del SP:', { 
+                    resultado: ResultadoSolicitud.output.resultado,
+                    mensaje: ResultadoSolicitud.output.mensaje,
+                    idPublicacion: ResultadoSolicitud.output.idPublicacion
+                });
+
                 resultadoInsercion = MensajeRetornoBDId({
                     datos: {
                         resultado: ResultadoSolicitud.output.resultado,
@@ -42,7 +49,8 @@ export class ModeloPublicacion {
                     }
                 });
         } catch (error) {
-            throw error;
+            logger({        
+                mensaje: ResultadoSolicitud.output.resultado});
         } finally {
             if (conexion) {
                 await sql.close();
@@ -240,36 +248,44 @@ export class ModeloPublicacion {
         return resultadoIncrementar;
     }
 
-    static async EsDueño(idPublicacion, idUsuarioRegistrado) {
-        let resultado;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
+    static async EsDueño(idPublicacion, idUsuario) {
+        console.log('[Modelo] EsDueño - Inicio');
+        console.log(`[Modelo] Parámetros: idPublicacion=${idPublicacion}, idUsuario=${idUsuario}`);
+        
         let conexion;
         try {
+            const ConfiguracionConexion = RetornarTipoDeConexion();
+            console.log('[Modelo] Conectando a la base de datos...');
             conexion = await sql.connect(ConfiguracionConexion);
             
             const Solicitud = conexion.request();
+            console.log('[Modelo] Ejecutando procedimiento almacenado...');
             const ResultadoSolicitud = await Solicitud
                 .input('idPublicacion', sql.Int, idPublicacion)
-                .input('idUsuarioRegistrado', sql.Int, idUsuarioRegistrado)
+                .input('idUsuario', sql.Int, idUsuario)
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
-                .execute('sps_verificarUsuarioAdminoPropietario')
+                .execute('sps_verificarUsuarioAdminoPropietario');
 
-            resultado = MensajeDeRetornoBaseDeDatosAcceso({
-                datos: ResultadoSolicitud.output
-            })
-
-            if (resultado.resultado == 200){
+            console.log('[Modelo] Resultado del procedimiento:', ResultadoSolicitud.output);
+            
+            const { resultado } = ResultadoSolicitud.output;
+                    
+            if (resultado == 200){
                 return true 
             } else {
                 return false
             }
+            
         } catch (error) {
-            throw error;
+            console.error('[Modelo] Error en EsDueño:', error);
+            return false;
         } finally {
             if (conexion) {
-                await sql.close();
+                console.log('[Modelo] Cerrando conexión...');
+                await conexion.close();
             }
         }
     }
 }
+

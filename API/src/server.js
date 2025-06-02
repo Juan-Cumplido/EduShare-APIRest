@@ -21,7 +21,6 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicacion, ModeloCatalogo, 
     app.use('/edushare/publicaciones', CrearRutaPublicacion({ModeloPublicacion}));
     app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
     app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
-    
     app.use('/edushare/doc',swaggerUI.serve, swaggerUI.setup(DocumentoSwagger));
 
     const PUERTO = process.env.PUERTO;
