@@ -322,7 +322,6 @@ export class ModeloAcceso {
         const ConfigurarConexion = RetornarTipoDeConexion()
         let conexion
         try {
-             console.log('[Modelo] Conectando a la base de datos...');
             conexion = await sql.connect(ConfigurarConexion)
 
             const Solicitud = conexion.request();
@@ -331,7 +330,6 @@ export class ModeloAcceso {
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
                 .execute('sps_verificarUsuarioAdmin')
-            console.log('[Modelo] Resultado del procedimiento:', ResultadoSolicitud.output);
             
             const { resultado } = ResultadoSolicitud.output;
 
