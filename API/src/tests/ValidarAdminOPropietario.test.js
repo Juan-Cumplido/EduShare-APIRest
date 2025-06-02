@@ -110,8 +110,6 @@ beforeAll(async () => {
         .send(datosPublicacion);
 
     idPublicacionTest = publicacionCreada.body.id
-    console.log("Este es el id de la publicación Inmeditamente creada"+idPublicacionTest)
-    console.log("Respuesta recibida:", publicacionCreada.body);
 
 }, 100000);
 
@@ -162,7 +160,7 @@ describe('Middleware ValidarAdminOPropietario', () => {
 
             expect(response.status).not.toBe(403);
             expect(response.status).not.toBe(401);
-        });
+        }, 100000);
 
         test('Debe permitir acceso al propietario con ID en body', async () => {
             const response = await request(servidor)
@@ -173,7 +171,7 @@ describe('Middleware ValidarAdminOPropietario', () => {
             expect(response.status).not.toBe(403);
             expect(response.status).not.toBe(401);
         });
-    }, 100000);
+    });
 
     describe('Casos de error - Autenticación', () => {
         test('Debe denegar acceso sin token de autenticación', async () => {
@@ -244,10 +242,6 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .set('Authorization', `Bearer ${tokenUsuarioNormal}`)
                 .send({});
 
-            console.log("RESULTADO DE Debe denegar acceso cuando falta ID del recurso en body")
-            console.log(response.status)
-            console.log(response.body)
-
             expect(response.status).toBe(400);
             expect(response.body).toEqual({
                 error: true,
@@ -263,10 +257,6 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .get(`/test/admin-propietario/${idPublicacionTest}`)
                 .set('Authorization', `Bearer ${tokenUsuarioNormal2}`);
 
-            console.log("RESULTADO DE DENEGAR ACCESO A UN USUARIO QUE NO ES ADMIN NI PROPIETARIO")
-            console.log("Este es el id de la publicación previamente creada"+idPublicacionTest)
-            console.log(response.status)
-            console.log(response.body)
             expect(response.status).toBe(403);
             expect(response.body).toEqual({
                 error: true,
@@ -276,8 +266,6 @@ describe('Middleware ValidarAdminOPropietario', () => {
         }, 100000);
     });
 
-
-    //Borrar
     test('Debe denegar acceso para recurso inexistente', async () => {
         const idInexistente = 99999;
         
@@ -353,7 +341,6 @@ describe('Middleware ValidarAdminOPropietario', () => {
     });
 
         test('Debe mantener consistencia entre params y body', async () => {
-        // Verificar que funciona igual con params que con body
         const responseParams = await request(servidor)
             .get(`/test/admin-propietario/${idPublicacionTest}`)
             .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
@@ -365,6 +352,4 @@ describe('Middleware ValidarAdminOPropietario', () => {
 
         expect(responseParams.status).toBe(responseBody.status);
     }, 100000);
-//NO BORRAR
 });
-
