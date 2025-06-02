@@ -250,7 +250,6 @@ export class ModeloPublicacion {
             conexion = await sql.connect(ConfiguracionConexion);
             
             const Solicitud = conexion.request();
-            console.log('[Modelo] Ejecutando procedimiento almacenado...');
             const ResultadoSolicitud = await Solicitud
                 .input('idPublicacion', sql.Int, idPublicacion)
                 .input('idUsuario', sql.Int, idUsuario)
@@ -268,7 +267,6 @@ export class ModeloPublicacion {
             }
             
         } catch (error) {
-            console.error('[Modelo] Error en EsDueño:', error);
             return false;
         } finally {
             if (conexion) {
