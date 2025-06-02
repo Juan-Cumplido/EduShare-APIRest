@@ -1,4 +1,3 @@
--- Insertar 10 Universidades
 INSERT INTO Institucion (nombreInstitucion, nivelEducativo) VALUES
 ('Universidad Nacional Autónoma de México', 'Universidad'),
 ('Instituto Tecnológico y de Estudios Superiores de Monterrey', 'Universidad'),
@@ -11,7 +10,6 @@ INSERT INTO Institucion (nombreInstitucion, nivelEducativo) VALUES
 ('Universidad Michoacana de San Nicolás de Hidalgo', 'Universidad'),
 ('Universidad Autónoma de Baja California', 'Universidad');
 
--- Insertar 10 Preparatorias
 INSERT INTO Institucion (nombreInstitucion, nivelEducativo) VALUES
 ('Preparatoria 5 UNAM', 'Preparatoria'),
 ('Preparatoria Tec de Monterrey Campus CDMX', 'Preparatoria'),
@@ -24,7 +22,6 @@ INSERT INTO Institucion (nombreInstitucion, nivelEducativo) VALUES
 ('Colegio de Bachilleres Plantel 1', 'Preparatoria'),
 ('Preparatoria La Salle', 'Preparatoria');
 
--- Insertar 6 Categorías
 INSERT INTO Categoria (nombreCategoria) VALUES
 ('Apuntes'),
 ('Resúmenes'),
@@ -34,8 +31,6 @@ INSERT INTO Categoria (nombreCategoria) VALUES
 ('Presentaciones');
 
 
-
--- Paso 1: Insertar 5 ramas
 INSERT INTO Rama (nombreRama)
 VALUES 
 ('Informática'),
@@ -44,7 +39,6 @@ VALUES
 ('Arte'),
 ('Ingeniería');
 
--- Paso 2: Insertar materias para cada rama
 -- Informática
 INSERT INTO Materia (nombreMateria) VALUES ('Programación');
 INSERT INTO Materia (nombreMateria) VALUES ('Bases de Datos');
@@ -70,9 +64,7 @@ INSERT INTO Materia (nombreMateria) VALUES ('Cálculo');
 INSERT INTO Materia (nombreMateria) VALUES ('Física');
 INSERT INTO Materia (nombreMateria) VALUES ('Termodinámica');
 
--- Paso 3: Asociar materias con ramas en la tabla MateriaYRama
-
--- Variables para almacenar los ID recién creados
+-- Asociar materias con ramas en la tabla MateriaYRama
 DECLARE @idRama INT, @idMateria INT;
 
 -- Informática
