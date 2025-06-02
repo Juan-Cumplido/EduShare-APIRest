@@ -141,20 +141,13 @@ BEGIN
         END
         
         SELECT @idAcceso = idAcceso FROM Acceso WHERE correo = @correo;
-        
         SELECT @idUsuarioRegistrado = idUsuarioRegistrado FROM UsuarioRegistrado WHERE idAcceso = @idAcceso;
         
         DELETE FROM Seguidor WHERE idUsuarioSeguidor = @idUsuarioRegistrado OR idUsuarioSeguido = @idUsuarioRegistrado;
         DELETE FROM Comentario WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
         DELETE FROM AgendaChat WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
         
-        DECLARE @documentosAEliminar TABLE (idDocumento INT);
-        INSERT INTO @documentosAEliminar
-        SELECT idDocumento FROM Publicacion WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
-        
         DELETE FROM Publicacion WHERE idUsuarioRegistrado = @idUsuarioRegistrado;
-        
-        DELETE FROM Documento WHERE idDocumento IN (SELECT idDocumento FROM @documentosAEliminar);
         
         DELETE FROM UsuarioRegistrado WHERE idAcceso = @idAcceso;
         
@@ -288,22 +281,32 @@ END;
 GO
 
 
-CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdmin
+CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdminoPropietario
     @idUsuario INT,
+    @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
-AS 
+AS
 BEGIN
-    IF EXISTS (SELECT 1 FROM ACCESO WHERE idUsuarioRegistrado = @idUsuario AND tipoAcceso = 'Administrador')
-        BEGIN 
-            SET @resultado = 200;
-            SET @mensaje = 'El usuario es Administrador';
-            RETURN
-        END
-        ELSE 
-        BEGIN
-            SET @resultado = 403;
-            SET @mensaje = 'El usuario no es Administrador';
-        END
+    IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+    BEGIN 
+        SET @resultado = 404;
+        SET @mensaje = 'La publicación no existe';
+        RETURN;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM Publicacion 
+        WHERE idPublicacion = @idPublicacion AND idUsuarioRegistrado = @idUsuario
+    )
+    BEGIN
+        SET @resultado = 200;
+        SET @mensaje = 'El usuario es el propietario de la publicación';
+    END
+    ELSE
+    BEGIN
+        SET @resultado = 403;
+        SET @mensaje = 'El usuario no es el propietario de la publicación';
+    END
 END
 GO

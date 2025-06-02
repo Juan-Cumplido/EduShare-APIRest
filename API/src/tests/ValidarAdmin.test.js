@@ -8,7 +8,6 @@ let app;
 let tokenAdministrador;
 let tokenUsuarioNormal;
 let idUsuarioNormal;
-let idRecursoTest;
 
 const correoAdministrador = "admin@test.com";
 const contraseñaAdmin = "AdminPassword123!";
@@ -22,7 +21,6 @@ beforeAll(async () => {
     servidor = servidorCreado;
     app = appCreada;
 
-    // Crear cuenta administrador
     const datosAdmin = {
         "correo": correoAdministrador,
         "contrasenia": contraseñaAdmin,
@@ -35,7 +33,6 @@ beforeAll(async () => {
 
     await request(servidor).post("/edushare/acceso/registroAdmin").send(datosAdmin);
 
-    // Crear cuenta usuario normal
     const datosUsuarioNormal = {
         "correo": correoUsuarioNormal,
         "contrasenia": contraseñaUsuarioNormal,
@@ -48,7 +45,6 @@ beforeAll(async () => {
 
     await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioNormal);
 
-    // Hacer login para obtener tokens
     const loginAdmin = await request(servidor)
         .post("/edushare/acceso/login")
         .send({
@@ -66,7 +62,6 @@ beforeAll(async () => {
     tokenAdministrador = loginAdmin.body.token;
     tokenUsuarioNormal = loginUsuarioNormal.body.token;
     idUsuarioNormal = loginUsuarioNormal.body.datos.idUsuario;
-    idRecursoTest = 1; // ID de recurso para pruebas
 
 }, 100000);
 
@@ -103,10 +98,6 @@ describe('Middleware ValidarAdmin', () => {
             const response = await request(servidor)
                 .get('/test/admin') 
                 .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
-
-
-            console.log(response.status)
-            console.log(response.body)
             
             expect(response.status).toBe(403);
             expect(response.body).toEqual({
@@ -120,10 +111,6 @@ describe('Middleware ValidarAdmin', () => {
         test('Debe denegar acceso sin token de autenticación', async () => {
             const response = await request(servidor)
                 .get('/test/admin');
-
-
-            console.log(response.status)
-            console.log(response.body)
 
             expect(response.status).toBe(401);
             expect(response.body).toEqual({
@@ -139,9 +126,6 @@ describe('Middleware ValidarAdmin', () => {
             const response = await request(servidor)
                 .get('/test/admin')
                 .set('Authorization', `Bearer ${tokenInvalido}`);
-
-            console.log(response.status)
-            console.log(response.body)
 
             expect(response.status).toBe(401);
             expect(response.body).toEqual({
@@ -162,9 +146,6 @@ describe('Middleware ValidarAdmin', () => {
             const response = await request(servidor)
                 .get('/test/admin')
                 .set('Authorization', `Bearer ${tokenInexistente}`);
-
-            console.log(response.status)
-            console.log(response.body)
 
             expect(response.status).toBe(403);
             expect(response.body).toEqual({
