@@ -7,16 +7,12 @@ export const CrearRutaSeguimiento = ({ ModeloSeguimiento }) => {
     const ControladorSeguimiento = new SeguimientoControlador({ModeloSeguimiento});
 
     router.use(ValidarJwt);
-
     router.post('/seguir', ControladorSeguimiento.SeguirUsuario);
-
     router.delete('/dejar-seguir', ControladorSeguimiento.DejarDeSeguirUsuario);
-
     router.get('/seguidores', ControladorSeguimiento.ObtenerSeguidores);
-
     router.get('/seguidos', ControladorSeguimiento.ObtenerSeguidos);
-
     router.get('/verificar/:idUsuario', ControladorSeguimiento.VerificarSeguimiento);
 
     return router;
 }
+

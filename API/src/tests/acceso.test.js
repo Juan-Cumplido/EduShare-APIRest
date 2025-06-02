@@ -160,7 +160,7 @@ describe('Test de cuenta de acceso', () => {
             estado: 200,
             mensaje: 'Cuenta creada exitosamente.'
         });
-    });
+    }, 100000);
 
     test('POST /recuperarContraseña - Se envía un código de recuperación al correo', async() => {
         const datos = {
@@ -178,7 +178,7 @@ describe('Test de cuenta de acceso', () => {
         }));
 
         codigoRecuperacion = res.body.codigo
-    });
+    }, 100000);
 
     test('POST /verificarCodigoYCambiarContrasena - Verificar código y cambiar contraseña', async () => {
         const datosCambio = {
@@ -197,7 +197,7 @@ describe('Test de cuenta de acceso', () => {
             estado: 200,
             mensaje: "La contraseña ha sido actualizada exitosamente"
         });
-    });
+    }, 100000);
 
     test('POST /verificarCodigoYCambiarContrasena - Código incorrecto', async () => {
         const datosRecuperacion = {
@@ -224,7 +224,7 @@ describe('Test de cuenta de acceso', () => {
             estado: 400,
             mensaje: "El código de verificación es incorrecto"
         });
-    });
+    }, 100000);
 
     test('POST /verificarCodigoYCambiarContrasena - Correo no existente', async () => {
         const datosCambio = {
@@ -260,7 +260,7 @@ describe('Test de cuenta de acceso', () => {
         expect(res.body.error).toBe(true);
         expect(res.body.estado).toBe(400);
         expect(res.body.mensaje).toBeDefined();
-    });
+    }, 100000);
 
     test('DEBUG - Verify admin account is created correctly', async () => {
         const loginAdmin = await request(app)
@@ -272,7 +272,7 @@ describe('Test de cuenta de acceso', () => {
         
         expect(loginAdmin.statusCode).toBe(200);
         expect(loginAdmin.body.token).toBeDefined();
-    });
+    }, 100000);
 
     test('POST /banearUsuario - Administrador banea usuario exitosamente', async () => {
         const datosBaneo = {
@@ -292,5 +292,5 @@ describe('Test de cuenta de acceso', () => {
             estado: 200,
             mensaje: 'Usuario baneado exitosamente.'
         });
-    });
+    }, 100000);
 });

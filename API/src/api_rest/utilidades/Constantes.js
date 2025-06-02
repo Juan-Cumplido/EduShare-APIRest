@@ -26,6 +26,13 @@ export function MensajeDeRetornoBaseDeDatosInfoAdicional({datos})
     return {resultado, mensaje, datosAdicionales};
 }
 
+export function MensajeRetornoBDId({datos}){
+    return {
+        resultado: datos.resultado,
+        mensaje: datos.mensaje,
+        id: datos.id
+    }
+}
 export function MensajeDeRetornoBaseDeDatosCatalogo({ datos, recordset }) {
     return {
         resultado: datos.resultado,

@@ -7,18 +7,12 @@ export const CrearRutaAcceso = ({ ModeloAcceso }) => {
     const ControladorAcceso = new AccesoControlador({ModeloAcceso});
 
     router.post('/registro', ControladorAcceso.RegistrarAcceso);
-
-    router.post('/login', ControladorAcceso.VerificarCredenciales);
-
-    router.post('/registroAdmin', ControladorAcceso.RegistrarAccesoAdmin);
-
-    router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena);
-
-    router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena);
-
-    router.post('/eliminar', ControladorAcceso.EliminarCuenta);
-
+    router.post('/login', ControladorAcceso.VerificarCredenciales)
     router.post('/banearUsuario', ValidarJwt, ControladorAcceso.BanearUsuario)
+    router.post('/recuperarContrasena', ControladorAcceso.RecuperarContrasena);
+    router.post('/verificarCodigoYCambiarContrasena', ControladorAcceso.VerificarCodigoYCambiarContrasena)
+    router.post('/eliminar', ControladorAcceso.EliminarCuenta);
+    router.post('/registroAdmin', ControladorAcceso.RegistrarAccesoAdmin)
 
     return router;
 }

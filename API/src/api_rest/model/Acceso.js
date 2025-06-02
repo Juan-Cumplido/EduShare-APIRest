@@ -317,4 +317,36 @@ export class ModeloAcceso {
             }
         }
     }
+
+    static async EsAdmin(idUsuario){
+
+        const ConfigurarConexion = RetornarTipoDeConexion()
+        let conexion
+        try {
+             console.log('[Modelo] Conectando a la base de datos...');
+            conexion = await sql.connect(ConfigurarConexion)
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud  
+                .input('idUsuario', sql.Int, idUsuario) 
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_verificarUsuarioAdmin')
+            console.log('[Modelo] Resultado del procedimiento:', ResultadoSolicitud.output);
+            
+            const { resultado } = ResultadoSolicitud.output;
+
+            if (resultado == 200){
+                return true
+            } else {
+                return false
+            }
+        } catch (error){
+                throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+    }
 }   
