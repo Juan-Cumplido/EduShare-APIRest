@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import {request,response} from 'express';
-import { logger } from '../utilidades/logger.js';
+import { logger } from '../utilidades/Logger.js';
 
 export const ValidarJwt = (request, response, next) =>
 {

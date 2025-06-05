@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { logger } from './logger.js';
+import { logger } from './Logger.js';
 
 export const GenerarJWT = (payload) => {
     return new Promise((resolve, reject) => 
