@@ -1,5 +1,5 @@
 import { ValidarRecuperacionCatalogo } from "../schemas/Catalogo.js";
-import { logger } from "../utilidades/logger.js";
+import { logger } from "../utilidades/Logger.js";
 
 export class CatalogoControlador{
     constructor({ModeloCatalogo}){

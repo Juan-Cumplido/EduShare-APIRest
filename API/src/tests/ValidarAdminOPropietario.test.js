@@ -1,7 +1,7 @@
 import request from "supertest";
 import jwt from 'jsonwebtoken';
 import { CrearServidorTest } from "../serverTest.js";
-import { ModeloAcceso } from "../api_rest/model/Acceso.js";
+import { ModeloAcceso } from "../api_rest/model/ModeloAcceso.js";
 import { ModeloPublicacion } from "../api_rest/model/ModeloPublicacion.js";
 
 let servidor;

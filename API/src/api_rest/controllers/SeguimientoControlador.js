@@ -1,5 +1,5 @@
 import { ValidarSeguimiento, ValidarConsultaSeguimiento } from "../schemas/Seguimiento.js";
-import { logger } from "../utilidades/logger.js";
+import { logger } from "../utilidades/Logger.js";
 
 export class SeguimientoControlador {
     constructor({ ModeloSeguimiento }) {

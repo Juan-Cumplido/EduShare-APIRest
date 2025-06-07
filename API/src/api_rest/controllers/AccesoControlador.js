@@ -1,5 +1,5 @@
 import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta, ValidarBaneo} from "../schemas/Acceso.js";
-import { logger } from "../utilidades/logger.js";
+import { logger } from "../utilidades/Logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
 import { GenerarJWT } from "../utilidades/generadorjwt.js";

@@ -1,5 +1,5 @@
-import { ModeloAcceso } from "../model/Acceso.js";
-import { logger } from "../utilidades/logger.js";
+import { ModeloAcceso } from '../model/ModeloAcceso.js';
+import { logger } from '../utilidades/Logger.js';
 
 export const ValidarAdminOPropietario = (modelo, campoId = 'id') => {
     return async (req, res, next) => {

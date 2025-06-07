@@ -1,5 +1,5 @@
 import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
-import { logger } from "../utilidades/logger.js";
+import { logger } from "../utilidades/Logger.js";
 
 export class PublicacionControlador {
     constructor({ ModeloPublicacion }) {
