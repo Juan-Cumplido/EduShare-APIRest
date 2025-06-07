@@ -68,6 +68,19 @@ export class PerfilControlador{
         }
     }
 
+    ObtenerUsuarioPorId = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const resultado = await this.modeloPerfil.ObtenerUsuarioPorId({ id });
+
+        this.manejarResultadoRecuperacion(res, resultado);
+    } catch (error) {
+        logger({ mensaje: `Error en ObtenerUsuarioPorId: ${error}` });
+        this.responderConError(res, 500, "Error al recuperar usuario por ID");
+    }
+}
+
 
     manejarResultado = (res, resultado) => {
         const codigoResultado = parseInt(resultado.resultado);
