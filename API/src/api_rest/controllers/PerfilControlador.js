@@ -14,7 +14,11 @@ export class PerfilControlador{
                 idUsuario
             });
 
-            this.manejarResultadoRecuperacion(res, ResultadoRecuperacion);
+            if (ResultadoRecuperacion.resultado === 200) {
+                this.responderConExito(res, ResultadoRecuperacion.mensaje, ResultadoRecuperacion.datos[0]);
+            } else {
+                this.responderConError(res, ResultadoRecuperacion.resultado, ResultadoRecuperacion.mensaje);
+            }
         } catch (error){
             logger({ mensaje: `Error en ObtenerPerfilPropio: ${error}` });
             this.responderConError(res, 500, "Ha ocurrido un error al recuperar el perfil");
@@ -61,7 +65,7 @@ export class PerfilControlador{
                 datos: ResultadoValidacion.data
             });
 
-            this.manejarResultadoRecuperacion(res, ResultadoActualizacion);
+            this.manejarResultado(res, ResultadoActualizacion);
         } catch (error) {
             logger({ mensaje: `Error en ActualizarAvatar: ${error}` });
             this.responderConError(res, 500, "Ha ocurrido un error al actualizar el avatar");
@@ -74,7 +78,7 @@ export class PerfilControlador{
 
         const resultado = await this.modeloPerfil.ObtenerUsuarioPorId({ id });
 
-        this.manejarResultadoRecuperacion(res, resultado);
+        this.manejarResultado(res, resultado);
     } catch (error) {
         logger({ mensaje: `Error en ObtenerUsuarioPorId: ${error}` });
         this.responderConError(res, 500, "Error al recuperar usuario por ID");
