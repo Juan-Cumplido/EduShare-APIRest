@@ -23,6 +23,7 @@ export class ModeloPerfil {
                 datos: ResultadoSolicitud.output,
                 recordset: ResultadoSolicitud.recordset
             });
+
         } catch (error) {
             throw error;
         } finally {
@@ -49,6 +50,7 @@ export class ModeloPerfil {
                 nombreUsuario,
                 idInstitucion
             } = datos;
+
 
             const Solicitud = conexion.request();
             const ResultadoSolicitud = await Solicitud
