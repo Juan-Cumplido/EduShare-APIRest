@@ -1,5 +1,5 @@
-import { ValidarInsercionPublicacion, ValidarEdicionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
-import { logger } from "../utilidades/logger.js";
+import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
+import { logger } from "../utilidades/Logger.js";
 
 export class PublicacionControlador {
     constructor({ ModeloPublicacion }) {
@@ -25,7 +25,6 @@ export class PublicacionControlador {
                 let resultadoInsercion = parseInt(ResultadoInsercion.resultado)
                 
                 if (resultadoInsercion === 500) {
-                    console.log('Resultado de inserción:', ResultadoInsercion);
                     logger({ mensaje: ResultadoInsercion.mensaje });
                     res.status(resultadoInsercion).json({
                         error: true,
@@ -33,7 +32,6 @@ export class PublicacionControlador {
                         mensaje: 'Ha ocurrido un error en la base de datos al querer insertar la publicación'
                     });
                 } else {
-                    console.log('Resultado de inserción:', ResultadoInsercion);
                     res.status(resultadoInsercion).json({
                         error: resultadoInsercion !== 201,
                         estado: ResultadoInsercion.resultado,

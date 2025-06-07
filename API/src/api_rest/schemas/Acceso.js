@@ -1,5 +1,5 @@
 import zod from 'zod';
-import { SoloLetras, SoloLetrasNumerosCaracteres, SoloLetrasYNumeros, SoloRutas, SoloCorreos, SoloIdentificadores, SoloBase64 } from '../utilidades/RegexValidadores.js';
+import { SoloLetras, SoloLetrasNumerosCaracteres, SoloLetrasYNumeros, SoloRutas, SoloIdentificadores } from '../utilidades/RegexValidadores.js';
 
 
 const CuentaEsquema = zod.object(
@@ -15,7 +15,6 @@ const CuentaEsquema = zod.object(
     segundoApellido: zod.string({ invalid_type_error: 'El segundo apellido no es válido'}).min(0).max(80).regex(SoloLetras).nullable(),
     
     
-    fotoPerfil: zod.string().regex(SoloBase64, { message: 'La foto de perfil debe estar en formato Base64 válido' }).optional(),
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
 });
 

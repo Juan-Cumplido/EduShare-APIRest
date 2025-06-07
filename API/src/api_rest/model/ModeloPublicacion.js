@@ -35,12 +35,6 @@ export class ModeloPublicacion {
                 .output('idPublicacion', sql.Int)
                 .execute('spi_InsertarPublicacion');
 
-                console.log('Resultados del SP:', { 
-                    resultado: ResultadoSolicitud.output.resultado,
-                    mensaje: ResultadoSolicitud.output.mensaje,
-                    idPublicacion: ResultadoSolicitud.output.idPublicacion
-                });
-
                 resultadoInsercion = MensajeRetornoBDId({
                     datos: {
                         resultado: ResultadoSolicitud.output.resultado,
@@ -249,17 +243,13 @@ export class ModeloPublicacion {
     }
 
     static async EsDueño(idPublicacion, idUsuario) {
-        console.log('[Modelo] EsDueño - Inicio');
-        console.log(`[Modelo] Parámetros: idPublicacion=${idPublicacion}, idUsuario=${idUsuario}`);
         
         let conexion;
         try {
             const ConfiguracionConexion = RetornarTipoDeConexion();
-            console.log('[Modelo] Conectando a la base de datos...');
             conexion = await sql.connect(ConfiguracionConexion);
             
             const Solicitud = conexion.request();
-            console.log('[Modelo] Ejecutando procedimiento almacenado...');
             const ResultadoSolicitud = await Solicitud
                 .input('idPublicacion', sql.Int, idPublicacion)
                 .input('idUsuario', sql.Int, idUsuario)
@@ -267,7 +257,6 @@ export class ModeloPublicacion {
                 .output('mensaje', sql.NVarChar(200))
                 .execute('sps_verificarUsuarioAdminoPropietario');
 
-            console.log('[Modelo] Resultado del procedimiento:', ResultadoSolicitud.output);
             
             const { resultado } = ResultadoSolicitud.output;
                     
@@ -278,11 +267,9 @@ export class ModeloPublicacion {
             }
             
         } catch (error) {
-            console.error('[Modelo] Error en EsDueño:', error);
             return false;
         } finally {
             if (conexion) {
-                console.log('[Modelo] Cerrando conexión...');
                 await conexion.close();
             }
         }
