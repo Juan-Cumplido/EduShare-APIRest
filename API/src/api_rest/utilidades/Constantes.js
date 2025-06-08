@@ -31,13 +31,3 @@ export function MensajeDeRetornoBaseDeDatosCatalogo({ datos, recordset }) {
     };
 }
 
-
-export const manejarResultado = (res, resultado) => {
-    const codigoResultado = parseInt(resultado.resultado);
-    
-    if (codigoResultado === 200) {
-        this.responderConExito(res, resultado.mensaje, resultado.datos);
-    } else {
-        this.responderConError(res, codigoResultado, resultado.mensaje);
-    }
-}
