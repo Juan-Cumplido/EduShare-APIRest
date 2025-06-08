@@ -1,4 +1,5 @@
 import { ValidarRecuperacionCatalogo } from "../schemas/Catalogo.js";
+import { responderConError, responderConExito, manejarResultado } from "../utilidades/Respuestas.js";
 import { logger } from "../utilidades/Logger.js";
 
 export class CatalogoControlador{
@@ -77,7 +78,7 @@ export class CatalogoControlador{
             }
         } catch (error) {
             logger({ mensaje: `Error en RecuperacionMaterias ${error}` })
-            this.responderConError(res, 500, "Ha ocurrido un error al recuperar las materias");
+            responderConError(res, 500, "Ha ocurrido un error al recuperar las materias");
         }
     }
 
@@ -111,45 +112,18 @@ export class CatalogoControlador{
         const ResultadoValidacion = ValidarRecuperacionCatalogo({ idRama: parseInt(idRama) });
 
         if (!ResultadoValidacion.success) {
-            return this.responderConError(res, 400, ResultadoValidacion.error.formErrors.fieldErrors)
+            return responderConError(res, 400, ResultadoValidacion.error.formErrors.fieldErrors)
         }
 
         const ResultadoRecuperacion = await this.modeloCatalogo.RecuperarMateriasPorRama({
             idRama: ResultadoValidacion.data.idRama
         });
 
-        this.manejarResultado(res, ResultadoRecuperacion);
+        manejarResultado(res, ResultadoRecuperacion);
     }
 
     recuperarTodasLasMaterias = async (res) => {
         const ResultadoRecuperacion = await this.modeloCatalogo.RecuperarMaterias();
-        this.manejarResultado(res, ResultadoRecuperacion);
-    }
-
-    manejarResultado = (res, resultado) => {
-        const codigoResultado = parseInt(resultado.resultado);
-        
-        if (codigoResultado === 200) {
-            this.responderConExito(res, resultado.mensaje, resultado.datos);
-        } else {
-            this.responderConError(res, codigoResultado, resultado.mensaje);
-        }
-    }
-
-    responderConExito = (res, mensaje, datos) => {
-        res.status(200).json({
-            error: false,
-            estado: 200,
-            mensaje,
-            datos
-        });
-    }
-
-    responderConError = (res, codigo, mensaje) => {
-        res.status(codigo).json({
-            error: true,
-            estado: codigo,
-            mensaje
-        });
+        manejarResultado(res, ResultadoRecuperacion);
     }
 }
