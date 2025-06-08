@@ -1,13 +1,3 @@
-export function ErrorEnLaBaseDeDatos()
-{
-    return {estado: 500, mensaje: "Ha ocurrido un error en la base de datos"}
-}
-
-export function ErrorEnLaBaseDeDatosInsercion()
-{
-    return {resultado: 500, mensaje: "Ha ocurrido un error en la base de datos al realizar la inserción"}
-}
-
 export function MensajeDeRetornoBaseDeDatos({datos})
 {
     const { estado, mensaje } = datos;
@@ -39,4 +29,15 @@ export function MensajeDeRetornoBaseDeDatosCatalogo({ datos, recordset }) {
         mensaje: datos.mensaje,
         datos: recordset || []
     };
+}
+
+
+export const manejarResultado = (res, resultado) => {
+    const codigoResultado = parseInt(resultado.resultado);
+    
+    if (codigoResultado === 200) {
+        this.responderConExito(res, resultado.mensaje, resultado.datos);
+    } else {
+        this.responderConError(res, codigoResultado, resultado.mensaje);
+    }
 }

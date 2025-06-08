@@ -3,8 +3,8 @@ import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
 import { CrearRutaPublicacion } from './api_rest/routes/Publicaciones.js';
 import { CrearRutaCatalogo } from './api_rest/routes/Catalogo.js';
 import { CrearRutaSeguimiento } from './api_rest/routes/Seguimiento.js';
-import { DocumentoSwagger } from './api_rest/utilidades/swagger.js';
 import { CrearRutaPerfil } from './api_rest/routes/Perfil.js';
+import { DocumentoSwagger } from './api_rest/utilidades/swagger.js';
 import swaggerUI from 'swagger-ui-express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -22,7 +22,7 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicacion, ModeloCatalogo, 
     app.use('/edushare/publicaciones', CrearRutaPublicacion({ModeloPublicacion}));
     app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
     app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
-    app.use('/perfil', CrearRutaPerfil({ModeloPerfil}))
+    app.use('/edushare/perfil', CrearRutaPerfil({ModeloPerfil}))
     app.use('/edushare/doc',swaggerUI.serve, swaggerUI.setup(DocumentoSwagger));
 
     const PUERTO = process.env.PUERTO;
