@@ -1,6 +1,5 @@
 import zod from 'zod';
-import { SoloLetras } from '../utilidades/RegexValidadores';
-import { SoloLetrasYNumeros } from '../utilidades/RegexValidadores';
+import { SoloLetras, SoloLetrasYNumeros } from '../utilidades/RegexValidadores.js';
 
 const ActualizacionPerfilEsquema = zod.object({
     nombre: zod.string({ invalid_type_error: 'El nombre ingresado no es válido',required_error: 'El nombre es un campo requerido'}).min(1).max(30).regex(SoloLetras),
@@ -16,7 +15,7 @@ const ActualizacionPerfilEsquema = zod.object({
 const ActualizacionAvatarEsquema = zod.object({
     fotoPerfil: zod.string({
         invalid_type_error: 'La foto de perfil debe ser una cadena de texto',
-        required_error: 'La foto de perfil es un campo requerido'
+           required_error: 'La foto de perfil es un campo requerido'
     })
     .min(1, "La ruta de la foto de perfil es requerida")
     .max(500, "La ruta de la foto de perfil es demasiado larga")
