@@ -5,11 +5,12 @@ import { CrearRutaAcceso } from './api_rest/routes/Acceso.js';
 import { CrearRutaCatalogo } from './api_rest/routes/Catalogo.js';
 import { CrearRutaSeguimiento } from './api_rest/routes/Seguimiento.js';
 import { CrearRutaPublicacion } from './api_rest/routes/Publicaciones.js';
+import { CrearRutaPerfil } from './api_rest/routes/Perfil.js';
 import { ValidarJwt } from './api_rest/middlewares/jwt.js';
 import { ValidarAdmin } from './api_rest/middlewares/ValidarAdmin.js';
 import { ValidarAdminOPropietario } from './api_rest/middlewares/ValidarAdminOPropietario.js';
 
-export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimiento, ModeloPublicacion}) => {
+export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimiento, ModeloPublicacion, ModeloPerfil}) => {
     const app = express();
     dotenv.config();
     app.use(json());
@@ -20,6 +21,7 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
     app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
     app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
     app.use('/edushare/publicacion', CrearRutaPublicacion({ModeloPublicacion}));
+    app.use('/edushare/perfil', CrearRutaPerfil({ModeloPerfil}))
 
     app.get('/test/admin', ValidarJwt, ValidarAdmin, (req, res) => {
         res.status(200).json({

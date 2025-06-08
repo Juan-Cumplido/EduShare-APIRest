@@ -72,19 +72,34 @@ export class PerfilControlador{
         }
     }
 
-    ObtenerUsuarioPorId = async (req, res) => {
-    try {
-        const { id } = req.params;
+    ObtenerPerfilPorId = async (req, res) => {
+        try {
+            const { idUsuario } = req.params;
+            
+            const resultado = await this.modeloPerfil.ObtenerPerfilPorId({ idUsuario })
 
-        const resultado = await this.modeloPerfil.ObtenerUsuarioPorId({ id });
-
-        this.manejarResultado(res, resultado);
-    } catch (error) {
-        logger({ mensaje: `Error en ObtenerUsuarioPorId: ${error}` });
-        this.responderConError(res, 500, "Error al recuperar usuario por ID");
+            if (resultado.resultado === 200) {
+                this.responderConExito(res, resultado.mensaje, resultado.datos[0])
+            } else {
+                this.responderConError(res, resultado.resultado, resultado.mensaje)
+            }
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPerfilPorId: ${error}` });
+            this.responderConError(res, 500, "Error al recuperar usuario por ID");
+        }
     }
-}
 
+    ObtenerPerfiles = async (req, res) => {
+        try {
+
+            const ResultadoRecuperacion = await this.modeloPerfil.ObtenerPerfiles()
+
+            this.manejarResultado(res, ResultadoRecuperacion);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPerfiles: ${error}` });
+            this.responderConError(res, 500, "No se han podido recuperar los perfiles");
+        }
+    }
 
     manejarResultado = (res, resultado) => {
         const codigoResultado = parseInt(resultado.resultado);
