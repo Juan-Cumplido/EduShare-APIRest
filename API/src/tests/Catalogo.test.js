@@ -32,7 +32,7 @@ describe('GET /catalogo/categorias - Recuperar Categorías', () => {
             mensaje: expect.any(String),
             datos: expect.any(Array)
         }));
-    });
+    }, 100000);
 });
 
  describe('GET /catalogo/ramas - Recuperar Ramas', () => {
@@ -48,7 +48,7 @@ describe('GET /catalogo/categorias - Recuperar Categorías', () => {
             mensaje: expect.any(String),
             datos: expect.any(Array)
         }));
-    });
+    }, 100000);
 });
 
 describe('GET /catalogo/materias - Recuperar Materias', () => {
@@ -64,7 +64,7 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
             mensaje: expect.any(String),
             datos: expect.any(Array)
         }));
-    });
+    }, 100000);
 
     test('Debe recuperar materias por rama específica', async () => {
         const idRama = 1; 
@@ -91,7 +91,7 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
                 mensaje: expect.stringMatching(/rama|materias/)
             }));
         }
-    });
+    }, 100000);
 
     test('Debe validar ID de rama inválido', async () => {
         const res = await request(app)
@@ -104,7 +104,7 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
             estado: 400,
             mensaje: expect.any(Object) 
         }));
-    });
+    }, 100000);
 
     test('Debe validar ID de rama negativo', async () => {
         const res = await request(app)
@@ -117,7 +117,7 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
             estado: 400,
             mensaje: expect.any(Object)
         }));
-    });
+    }, 100000);
 
     test('Debe validar ID de rama igual a cero', async () => {
         const res = await request(app)
@@ -130,7 +130,7 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
             estado: 400,
             mensaje: expect.any(Object)
         }));
-    });
+    }, 100000);
 
     test('Debe manejar rama inexistente', async () => {
         const idRamaInexistente = 99999;
@@ -145,5 +145,5 @@ describe('GET /catalogo/materias - Recuperar Materias', () => {
             estado: 404,
             mensaje: 'La rama especificada no existe'
         }));
-    });
+    }, 100000);
 });

@@ -1,5 +1,5 @@
 import sql from 'mssql';
-import { logger } from "../utilidades/logger.js";
+import { logger } from "../utilidades/Logger.js";
 import { RetornarTipoDeConexion } from './sql/connection/ConfiguracionConexion.js';
 import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso } from '../utilidades/Constantes.js';
 

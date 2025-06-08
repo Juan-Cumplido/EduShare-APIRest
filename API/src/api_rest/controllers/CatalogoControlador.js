@@ -118,15 +118,15 @@ export class CatalogoControlador{
             idRama: ResultadoValidacion.data.idRama
         });
 
-        this.manejarResultadoRecuperacion(res, ResultadoRecuperacion);
+        this.manejarResultado(res, ResultadoRecuperacion);
     }
 
     recuperarTodasLasMaterias = async (res) => {
         const ResultadoRecuperacion = await this.modeloCatalogo.RecuperarMaterias();
-        this.manejarResultadoRecuperacion(res, ResultadoRecuperacion);
+        this.manejarResultado(res, ResultadoRecuperacion);
     }
 
-    manejarResultadoRecuperacion = (res, resultado) => {
+    manejarResultado = (res, resultado) => {
         const codigoResultado = parseInt(resultado.resultado);
         
         if (codigoResultado === 200) {
