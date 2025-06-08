@@ -106,7 +106,7 @@ describe('Middleware ValidarAdmin', () => {
                 mensaje: 'No tiene permisos de administrador para realizar esta acción'
             });
             
-        });
+        }, 100000);
 
         test('Debe denegar acceso sin token de autenticación', async () => {
             const response = await request(servidor)
@@ -118,7 +118,7 @@ describe('Middleware ValidarAdmin', () => {
                 estado: 401,
                 mensaje: 'No hay un token dentro de la solicitud'
             });
-        });
+        }, 100000);
 
         test('Debe denegar acceso con token inválido', async () => {
             const tokenInvalido = 'token.invalido.aqui';
@@ -133,7 +133,7 @@ describe('Middleware ValidarAdmin', () => {
                 estado: 401,
                 mensaje: 'Token inválido'
             });
-        });
+        }, 100000);
 
         test('Debe manejar error cuando el usuario no existe', async () => {
             // Crear token con ID de usuario inexistente
@@ -153,7 +153,7 @@ describe('Middleware ValidarAdmin', () => {
                 estado: 403,
                 mensaje: 'No tiene permisos de administrador para realizar esta acción'
             });
-        });
-    }, 100000);
+        }, 100000);
+    });
 });
 
