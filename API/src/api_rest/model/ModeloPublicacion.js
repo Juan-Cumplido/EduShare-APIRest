@@ -43,8 +43,7 @@ export class ModeloPublicacion {
                     }
                 });
         } catch (error) {
-            logger({        
-                mensaje: ResultadoSolicitud.output.resultado});
+            logger({ mensaje: error.message });
         } finally {
             if (conexion) {
                 await sql.close();
