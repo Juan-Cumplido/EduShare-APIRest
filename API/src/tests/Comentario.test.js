@@ -36,7 +36,6 @@ const usuarioPrueba2 = {
 const publicacionPrueba = {
     idCategoria: 1,
     resuContenido: "Esta es una publicación de prueba para comentarios",
-    estado: "Aceptado",
     nivelEducativo: "Universidad",
     idMateriaYRama: 1,
     idDocumento: 3
@@ -75,7 +74,6 @@ beforeAll(async () => {
     tokenUsuario2 = loginResponse2.body.token;
     idUsuario2 = loginResponse2.body.datos.idUsuario;
 
-    // Crear una publicación para usar en las pruebas
     const publicacionResponse = await request(app)
         .post("/edushare/publicacion")
         .set('Authorization', `Bearer ${tokenUsuario}`)

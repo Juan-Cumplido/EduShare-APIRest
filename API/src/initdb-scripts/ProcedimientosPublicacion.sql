@@ -79,6 +79,72 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sps_ObtenerPublicaciones
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        SELECT 
+            p.idPublicacion,
+            p.idCategoria,
+            p.fecha,
+            p.resuContenido,
+            p.estado,
+            p.numeroLiker,
+            p.nivelEducativo,
+            p.numeroVisualizaciones,
+            p.numeroDescargas,
+            p.idUsuarioRegistrado,
+            p.idMateriaYRama,
+            p.idDocumento,
+            ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
+        FROM Publicacion p
+        INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        WHERE p.estado = 'Aceptado'
+        ORDER BY p.fecha DESC;
+
+        SET @resultado = 200;
+        SET @mensaje = 'Publicaciones obtenidas exitosamente';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = ERROR_MESSAGE();
+    END CATCH
+END
+
+
+CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdminoPropietario
+    @idUsuario INT,
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+    BEGIN 
+        SET @resultado = 404;
+        SET @mensaje = 'La publicación no existe';
+        RETURN;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM Publicacion 
+        WHERE idPublicacion = @idPublicacion AND idUsuarioRegistrado = @idUsuario
+    )
+    BEGIN
+        SET @resultado = 200;
+        SET @mensaje = 'El usuario es el propietario de la publicación';
+    END
+    ELSE
+    BEGIN
+        SET @resultado = 403;
+        SET @mensaje = 'El usuario no es el propietario de la publicación';
+    END
+END
+
+
 CREATE OR ALTER PROCEDURE spd_EliminarPublicacion
     @idPublicacion INT,
     @resultado INT OUTPUT,
@@ -183,32 +249,3 @@ BEGIN
     END CATCH
 END
 GO
-
-CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdminoPropietario
-    @idUsuario INT,
-    @idPublicacion INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
-    BEGIN 
-        SET @resultado = 404;
-        SET @mensaje = 'La publicación no existe';
-        RETURN;
-    END
-
-    IF EXISTS (
-        SELECT 1 FROM Publicacion 
-        WHERE idPublicacion = @idPublicacion AND idUsuarioRegistrado = @idUsuario
-    )
-    BEGIN
-        SET @resultado = 200;
-        SET @mensaje = 'El usuario es el propietario de la publicación';
-    END
-    ELSE
-    BEGIN
-        SET @resultado = 403;
-        SET @mensaje = 'El usuario no es el propietario de la publicación';
-    END
-END

@@ -1,7 +1,7 @@
 import sql from 'mssql';
 import { logger } from "../utilidades/Logger.js";
 import { RetornarTipoDeConexion } from './sql/connection/ConfiguracionConexion.js';
-import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso } from '../utilidades/Constantes.js';
+import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDeDatosAcceso, MensajeDeRetornoBaseDeDatosCatalogo } from '../utilidades/Constantes.js';
 
 export class ModeloPublicacion {
 
@@ -52,193 +52,31 @@ export class ModeloPublicacion {
         return resultadoInsercion;
     }
 
-    static async obtenerPublicaciones(filtros = {}, opciones = { limite: 10, pagina: 1 }) {
-        let resultado;
+    static async obtenerPublicaciones() {
+        let resultadoRecuperacion;
         const ConfiguracionConexion = RetornarTipoDeConexion();
         let conexion;
+        
         try {
             conexion = await sql.connect(ConfiguracionConexion);
-            
-            const { categoria, nivelEducativo, idRama, idMateria } = filtros;
-            const { limite, pagina } = opciones;
-            
             const Solicitud = conexion.request();
-            Solicitud
-                .input('limite', sql.Int, limite)
-                .input('pagina', sql.Int, pagina);
-            
-            if (categoria) Solicitud.input('categoria', sql.NVarChar(25), categoria);
-            if (nivelEducativo) Solicitud.input('nivelEducativo', sql.NVarChar(20), nivelEducativo);
-            if (idRama) Solicitud.input('idRama', sql.Int, idRama);
-            if (idMateria) Solicitud.input('idMateria', sql.Int, idMateria);
-            
-            const ResultadoSolicitud = await Solicitud.execute('sps_ObtenerPublicaciones');
-            
-            resultado = {
-                datos: ResultadoSolicitud.recordset,
-                total: ResultadoSolicitud.recordset.length > 0 
-                    ? ResultadoSolicitud.recordset[0].totalRegistros 
-                    : 0
-            };
-            
+            const ResultadoSolicitud = await Solicitud
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicaciones');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
         } catch (error) {
-            throw error;
+            throw error
         } finally {
             if (conexion) {
                 await sql.close();
             }
         }
-        return resultado;
-    }
-
-    static async actualizarPublicacion(idPublicacion, datos) {
-        let resultadoActualizacion;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const {
-                categoria,
-                resuContenido,
-                estado,
-                nivelEducativo,
-                idRama,
-                idMateria
-            } = datos;
-
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .input('categoria', sql.NVarChar(25), categoria)
-                .input('resuContenido', sql.NVarChar(200), resuContenido)
-                .input('estado', sql.NVarChar(20), estado)
-                .input('nivelEducativo', sql.NVarChar(20), nivelEducativo)
-                .input('idRama', sql.Int, idRama)
-                .input('idMateria', sql.Int, idMateria)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('spu_ActualizarPublicacion');
-
-            resultadoActualizacion = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output 
-            });
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultadoActualizacion;
-    }
-
-    static async eliminarPublicacion(idPublicacion) {
-        let resultadoEliminacion;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('spd_EliminarPublicacion');
-
-            resultadoEliminacion = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output 
-            });
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultadoEliminacion;
-    }
-
-    static async incrementarVisualizacion(idPublicacion) {
-        let resultadoIncrementar;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('spu_IncrementarVisualizacion');
-
-            resultadoIncrementar = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output 
-            });
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultadoIncrementar;
-    }
-
-    static async incrementarDescarga(idPublicacion) {
-        let resultadoIncrementar;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('spu_IncrementarDescarga');
-
-            resultadoIncrementar = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output 
-            });
-        } catch (error) {
-            throw error;
-        } finally {
-            if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultadoIncrementar;
-    }
-
-    static async incrementarLike(idPublicacion) {
-        let resultadoIncrementar;
-        const ConfiguracionConexion = RetornarTipoDeConexion();
-        let conexion;
-        try {
-            conexion = await sql.connect(ConfiguracionConexion);
-            
-            const Solicitud = conexion.request();
-            const ResultadoSolicitud = await Solicitud
-                .input('idPublicacion', sql.Int, idPublicacion)
-                .output('resultado', sql.Int)
-                .output('mensaje', sql.NVarChar(200))
-                .execute('spu_IncrementarLike');
-
-            resultadoIncrementar = MensajeDeRetornoBaseDeDatos({ 
-                datos: ResultadoSolicitud.output 
-            });
-        } catch (error) {
-            throw error;
-        } finally {
-        if (conexion) {
-                await sql.close();
-            }
-        }
-        return resultadoIncrementar;
+        return resultadoRecuperacion;
     }
 
     static async EsDueño(idPublicacion, idUsuario) {
@@ -272,6 +110,87 @@ export class ModeloPublicacion {
                 await conexion.close();
             }
         }
+    }
+
+    static async incrementarVisualizacion(idPublicacion) {
+        let resultadoIncrementar;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idPublicacion', sql.Int, idPublicacion)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spu_IncrementarVisualizacion');
+
+            resultadoIncrementar = MensajeDeRetornoBaseDeDatosAcceso({ 
+                datos: ResultadoSolicitud.output 
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoIncrementar;
+    }
+
+    static async incrementarDescarga(idPublicacion) {
+        let resultadoIncrementar;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idPublicacion', sql.Int, idPublicacion)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spu_IncrementarDescarga');
+
+            resultadoIncrementar = MensajeDeRetornoBaseDeDatosAcceso({ 
+                datos: ResultadoSolicitud.output 
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoIncrementar;
+    }
+
+    static async incrementarLike(idPublicacion) {
+        let resultadoIncrementar;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idPublicacion', sql.Int, idPublicacion)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('spu_IncrementarLike');
+
+            resultadoIncrementar = MensajeDeRetornoBaseDeDatosAcceso({ 
+                datos: ResultadoSolicitud.output 
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+        if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoIncrementar;
     }
 }
 

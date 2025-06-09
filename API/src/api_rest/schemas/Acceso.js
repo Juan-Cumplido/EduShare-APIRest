@@ -1,5 +1,5 @@
 import zod from 'zod';
-import { SoloLetras, SoloLetrasNumerosCaracteres, SoloLetrasYNumeros, SoloRutas, SoloIdentificadores } from '../utilidades/RegexValidadores.js';
+import { SoloLetras, SoloLetrasYNumeros, SoloRutas, SoloIdentificadores } from '../utilidades/RegexValidadores.js';
 
 
 const CuentaEsquema = zod.object(
