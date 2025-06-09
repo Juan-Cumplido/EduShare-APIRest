@@ -61,6 +61,15 @@ export class PublicacionControlador {
         }
     }
 
+    ObtenerPublicaciones = async (req, res) => {
+        try {
+            const resultado = await this.modeloPublicacion.obtenerPublicaciones();
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPublicaciones: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones");
+        }
+    }
 
     EliminarPublicacion = async (req, res) => {
         try {
