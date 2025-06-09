@@ -8,6 +8,7 @@ export class PublicacionControlador {
 
     CrearPublicacion = async (req, res) => {
         try {
+
             const datosPublicacion = {
                 idCategoria: req.body.idCategoria,
                 resuContenido: req.body.resuContenido,
@@ -17,11 +18,12 @@ export class PublicacionControlador {
                 idMateriaYRama: req.body.idMateriaYRama, 
                 idDocumento: req.body.idDocumento
             };
-            
+
             const ResultadoValidacion = ValidarInsercionPublicacion(datosPublicacion)   
 
             if (ResultadoValidacion.success) {
                 const ResultadoInsercion = await this.modeloPublicacion.insertarPublicacion(ResultadoValidacion.data)
+
                 let resultadoInsercion = parseInt(ResultadoInsercion.resultado)
                 
                 if (resultadoInsercion === 500) {
@@ -40,6 +42,7 @@ export class PublicacionControlador {
                     });
                 }
             } else {
+
                 res.status(400).json({
                     error: true,
                     estado: 400,
@@ -47,6 +50,7 @@ export class PublicacionControlador {
                 });
             }
         } catch (error) {
+            console.error('[Controlador] Error inesperado:', error); 
             logger({ mensaje: error });
             res.status(500).json({
                 error: true,

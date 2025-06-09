@@ -26,9 +26,7 @@ BEGIN
             i.idInstitucion,
             i.nombreInstitucion,
             i.nivelEducativo,
-            -- Contar seguidores
             (SELECT COUNT(*) FROM Seguidor s WHERE s.idUsuarioSeguido = ur.idUsuarioRegistrado) AS numeroSeguidores,
-            -- Contar seguidos
             (SELECT COUNT(*) FROM Seguidor s WHERE s.idUsuarioSeguidor = ur.idUsuarioRegistrado) AS numeroSeguidos
         FROM UsuarioRegistrado ur
         INNER JOIN Acceso a ON ur.idAcceso = a.idAcceso
@@ -164,39 +162,6 @@ BEGIN
 END
 GO
 
-
-CREATE OR ALTER PROCEDURE spi_CambiarContrasena
-    @correo NVARCHAR(256),
-    @nuevaContrasenia NVARCHAR(300),
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'El correo proporcionado no está registrado en el sistema';
-            RETURN;
-        END
-        
-        UPDATE Acceso
-        SET contrasenia = @nuevaContrasenia
-        WHERE correo = @correo;
-        
-        SET @resultado = 200;
-        SET @mensaje = 'Contraseña actualizada correctamente';
-    END TRY
-    BEGIN CATCH
-        SET @resultado = 500;
-        SET @mensaje = 'Error al actualizar la contraseña: ' + ERROR_MESSAGE();
-    END CATCH
-END
-GO
-
-
 CREATE OR ALTER PROCEDURE sps_ObtenerPerfilPorId
     @idUsuario INT,
     @resultado INT OUTPUT,
@@ -271,3 +236,34 @@ BEGIN
         SET @mensaje = 'Error al recuperar los perfiles: ' + ERROR_MESSAGE();
     END CATCH
 END
+
+CREATE OR ALTER PROCEDURE spi_CambiarContrasena
+    @correo NVARCHAR(256),
+    @nuevaContrasenia NVARCHAR(300),
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Acceso WHERE correo = @correo)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'El correo proporcionado no está registrado en el sistema';
+            RETURN;
+        END
+        
+        UPDATE Acceso
+        SET contrasenia = @nuevaContrasenia
+        WHERE correo = @correo;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Contraseña actualizada correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al actualizar la contraseña: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
