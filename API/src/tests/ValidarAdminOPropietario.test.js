@@ -98,7 +98,6 @@ beforeAll(async () => {
     const datosPublicacion = {
         idCategoria: 1,
         resuContenido: "Contenido de prueba para testing",
-        estado: "Aceptado",
         nivelEducativo: "Universidad",
         idMateriaYRama: 1,
         idDocumento: 3

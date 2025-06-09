@@ -3,6 +3,8 @@ export const manejarResultado = (res, resultado) => {
     
     if (codigoResultado === 200) {
         responderConExito(res, resultado.mensaje, resultado.datos);
+    } else if (codigoResultado === 201){
+        responderConExito201(res, resultado.mensaje, resultado.datos)
     } else {
         responderConError(res, codigoResultado, resultado.mensaje);
     }
@@ -22,5 +24,14 @@ export const responderConError = (res, codigo, mensaje) => {
         error: true,
         estado: codigo,
         mensaje
+    });
+};
+
+export const responderConExito201 = (res, mensaje, datos) => {
+    res.status(201).json({
+        error: false,
+        estado: 201,
+        mensaje,
+        datos
     });
 };

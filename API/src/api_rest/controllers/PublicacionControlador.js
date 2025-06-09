@@ -1,4 +1,5 @@
 import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
+import { manejarResultado, responderConError, responderConExito } from "../utilidades/Respuestas.js";
 import { logger } from "../utilidades/Logger.js";
 
 export class PublicacionControlador {
@@ -8,20 +9,22 @@ export class PublicacionControlador {
 
     CrearPublicacion = async (req, res) => {
         try {
+
             const datosPublicacion = {
                 idCategoria: req.body.idCategoria,
                 resuContenido: req.body.resuContenido,
-                estado: req.body.estado,
+                estado: "EnRevision",
                 nivelEducativo: req.body.nivelEducativo,
                 idUsuarioRegistrado: req.idUsuario,
                 idMateriaYRama: req.body.idMateriaYRama, 
                 idDocumento: req.body.idDocumento
             };
-            
+
             const ResultadoValidacion = ValidarInsercionPublicacion(datosPublicacion)   
 
             if (ResultadoValidacion.success) {
                 const ResultadoInsercion = await this.modeloPublicacion.insertarPublicacion(ResultadoValidacion.data)
+
                 let resultadoInsercion = parseInt(ResultadoInsercion.resultado)
                 
                 if (resultadoInsercion === 500) {
@@ -40,6 +43,7 @@ export class PublicacionControlador {
                     });
                 }
             } else {
+
                 res.status(400).json({
                     error: true,
                     estado: 400,
@@ -47,6 +51,7 @@ export class PublicacionControlador {
                 });
             }
         } catch (error) {
+            console.error('[Controlador] Error inesperado:', error); 
             logger({ mensaje: error });
             res.status(500).json({
                 error: true,
@@ -56,6 +61,15 @@ export class PublicacionControlador {
         }
     }
 
+    ObtenerPublicaciones = async (req, res) => {
+        try {
+            const resultado = await this.modeloPublicacion.obtenerPublicaciones();
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPublicaciones: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones");
+        }
+    }
 
     EliminarPublicacion = async (req, res) => {
         try {
@@ -63,71 +77,24 @@ export class PublicacionControlador {
             
             const datosEliminacion = {
                 idPublicacion: parseInt(id),
-                idUsuario: req.idUsuario 
+                idUsuario: req.idUsuario
             };
             
             const ResultadoValidacion = ValidarEliminacionPublicacion(datosEliminacion);
             
-            if (ResultadoValidacion.success) {
-                const ResultadoEliminacion = await this.modeloPublicacion.eliminarPublicacion(
-                    ResultadoValidacion.data.idPublicacion,
-                    ResultadoValidacion.data.idUsuario
-                );
-                
-                let resultadoEliminacion = parseInt(ResultadoEliminacion.resultado);
-                
-                switch(resultadoEliminacion) {
-                    case 200:
-                        res.status(200).json({
-                            error: false,
-                            estado: 200,
-                            mensaje: ResultadoEliminacion.mensaje,
-                            //data: { idPublicacion: id }
-                        });
-                        break;
-                    case 403:
-                        res.status(403).json({
-                            error: true,
-                            estado: 403,
-                            mensaje: 'No tienes permiso para eliminar esta publicación'
-                        });
-                        break;
-                    case 404:
-                        res.status(404).json({
-                            error: true,
-                            estado: 404,
-                            mensaje: 'Publicación no encontrada'
-                        });
-                        break;
-                    case 500:
-                        logger({ mensaje: ResultadoEliminacion.mensaje });
-                        res.status(500).json({
-                            error: true,
-                            estado: 500,
-                            mensaje: 'Ha ocurrido un error en la base de datos al eliminar la publicación'
-                        });
-                        break;
-                    default:
-                        res.status(resultadoEliminacion).json({
-                            error: resultadoEliminacion !== 200,
-                            estado: ResultadoEliminacion.resultado,
-                            mensaje: ResultadoEliminacion.mensaje
-                        });
-                }
-            } else {
-                res.status(400).json({
-                    error: true,
-                    estado: 400,
-                    mensaje: ResultadoValidacion.error.formErrors
-                });
+            if (!ResultadoValidacion.success) {
+                return responderConError(res, 400, ResultadoValidacion.error.formErrors);
             }
+
+            const ResultadoEliminacion = await this.modeloPublicacion.eliminarPublicacion(
+                ResultadoValidacion.data.idPublicacion,
+                ResultadoValidacion.data.idUsuario
+            );
+
+            manejarResultado(res, ResultadoEliminacion);
         } catch (error) {
-            logger({ mensaje: error });
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al eliminar la publicación."
-            });
+            logger({ mensaje: `Error en EliminarPublicacion: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al eliminar la publicación");
         }
     }
 }
