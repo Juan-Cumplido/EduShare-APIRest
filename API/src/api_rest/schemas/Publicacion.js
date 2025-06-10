@@ -2,7 +2,6 @@ import zod from 'zod';
 import { SoloLetrasNumerosCaracteres, SoloRutas } from '../utilidades/RegexValidadores.js';
 
 const EstadoPublicacionEnum = zod.enum(['Aceptado', 'Rechazado', 'Eliminado', 'EnRevision']);
-const EstadoUsuarioEnum = zod.enum(['Activo', 'Baneado']);
 const NivelEducativoEnum = zod.enum(['Preparatoria', 'Universidad']);
 
 const PublicacionEsquema = zod.object({
@@ -49,3 +48,6 @@ export function ValidarInsercionPublicacion(entrada) {
 export function ValidarEliminacionPublicacion(entrada) {
   return PublicacionEliminacion.safeParse(entrada);
 }
+
+
+

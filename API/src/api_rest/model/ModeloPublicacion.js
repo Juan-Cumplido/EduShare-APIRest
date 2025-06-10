@@ -43,7 +43,7 @@ export class ModeloPublicacion {
                     }
                 });
         } catch (error) {
-            logger({ mensaje: error.message });
+            throw error
         } finally {
             if (conexion) {
                 await sql.close();
@@ -64,6 +64,180 @@ export class ModeloPublicacion {
                 .output('resultado', sql.Int)
                 .output('mensaje', sql.NVarChar(200))
                 .execute('sps_ObtenerPublicaciones');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionPorId(idPublicacion) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idPublicacion', sql.Int, idPublicacion)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionPorId');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionesPropias(idUsuario) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idUsuario', sql.Int, idUsuario)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPropias');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionesPorCategoria(idCategoria) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idCategoria', sql.Int, idCategoria)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPorCategoria');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionesPorRama(idRama) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idRama', sql.Int, idRama)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPorRama');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            logger({ mensaje: error.message });
+            resultado = MensajeDeRetornoBaseDeDatos({
+                datos: {
+                    resultado: 500,
+                    mensaje: 'Error interno del servidor'
+                }
+            });
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionesPorNivelEducativo(nivelEducativo) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('nivelEducativo', sql.NVarChar(20), nivelEducativo)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPorNivelEducativo');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
+    static async obtenerPublicacionesPorUsuario(idUsuario) {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('idUsuario', sql.Int, idUsuario)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPorUsuario');
 
             resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
                 datos: ResultadoSolicitud.output,

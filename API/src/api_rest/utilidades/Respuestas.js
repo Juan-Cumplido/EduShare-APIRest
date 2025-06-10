@@ -35,3 +35,12 @@ export const responderConExito201 = (res, mensaje, datos) => {
         datos
     });
 };
+
+
+export const validarId = (id, res, entidad) => {
+    if (isNaN(id) || id <= 0) {
+        responderConError(res, 400, `El ID de ${entidad} debe ser un número válido`);
+        return false;
+    }
+    return true;
+};
