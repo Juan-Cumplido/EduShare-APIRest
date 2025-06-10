@@ -140,3 +140,16 @@ CREATE TABLE AgendaChat (
     FOREIGN KEY (idUsuarioRegistrado) REFERENCES UsuarioRegistrado(idUsuarioRegistrado)
 );
 GO
+
+CREATE TABLE Notificaciones (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    UsuarioDestinoId NVARCHAR(100) NOT NULL,
+    Titulo NVARCHAR(255) NOT NULL,
+    Mensaje NVARCHAR(MAX),
+    UsuarioOrigenId NVARCHAR(100),
+    Tipo NVARCHAR(50),
+    DatosExtras NVARCHAR(MAX),
+    Leido BIT DEFAULT 0,
+    FechaCreacion DATETIME DEFAULT GETDATE()
+);
+GO
