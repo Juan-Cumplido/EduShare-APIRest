@@ -1,14 +1,20 @@
 export const manejarResultado = (res, resultado) => {
-    const codigoResultado = parseInt(resultado.resultado);
+    const codigo = parseInt(resultado.resultado);
     
-    if (codigoResultado === 200) {
-        responderConExito(res, resultado.mensaje, resultado.datos);
-    } else if (codigoResultado === 201){
-        responderConExito201(res, resultado.mensaje, resultado.datos)
-    } else {
-        responderConError(res, codigoResultado, resultado.mensaje);
+    const respuestasExitosas = {
+        200: responderConExito,
+        201: responderConExito201,
+        204: responderConExito204
+    };
+    
+    if (respuestasExitosas[codigo]) {
+        respuestasExitosas[codigo](res, resultado.mensaje, resultado.datos);
+    } 
+
+    else {
+        responderConError(res, codigo, resultado.mensaje);
     }
-}
+};
 
 export const responderConExito = (res, mensaje, datos) => {
     res.status(200).json({
@@ -31,6 +37,15 @@ export const responderConExito201 = (res, mensaje, datos) => {
     res.status(201).json({
         error: false,
         estado: 201,
+        mensaje,
+        datos
+    });
+};
+
+export const responderConExito204 = (res, mensaje, datos) => {
+    res.status(204).json({
+        error: false,
+        estado: 204,
         mensaje,
         datos
     });

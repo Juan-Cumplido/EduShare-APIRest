@@ -23,7 +23,7 @@ export class PublicacionControlador {
             const ResultadoValidacion = ValidarInsercionPublicacion(datosPublicacion)   
 
             if (ResultadoValidacion.success) {
-                const ResultadoInsercion = await this.modeloPublicacion.insertarPublicacion(ResultadoValidacion.data)
+                const ResultadoInsercion = await this.modeloPublicacion.InsertarPublicacion(ResultadoValidacion.data)
 
                 let resultadoInsercion = parseInt(ResultadoInsercion.resultado)
                 
@@ -63,7 +63,7 @@ export class PublicacionControlador {
 
     ObtenerPublicaciones = async (req, res) => {
         try {
-            const resultado = await this.modeloPublicacion.obtenerPublicaciones();
+            const resultado = await this.modeloPublicacion.ObtenerPublicaciones();
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPublicaciones: ${error}` });
@@ -80,7 +80,7 @@ export class PublicacionControlador {
                 return
             }            
 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionPorId(id);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionPorId(id);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPublicacionPorId: ${error}` });
@@ -91,7 +91,7 @@ export class PublicacionControlador {
     ObtenerPublicacionesPropias = async (req, res) => {
         try {
             const idUsuario = req.idUsuario; 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionesPropias(idUsuario);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionesPropias(idUsuario);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPublicacionesPropias: ${error}` });
@@ -108,7 +108,7 @@ export class PublicacionControlador {
                     return
                 }
 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorCategoria(id);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionesPorCategoria(id);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPorCategoria: ${error}` });
@@ -125,7 +125,7 @@ export class PublicacionControlador {
                 return
             }
 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorRama(id);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionesPorRama(id);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPorRama: ${error}` });
@@ -141,7 +141,7 @@ export class PublicacionControlador {
                 return responderConError(res, 400, "El nivel educativo debe ser 'Preparatoria' o 'Universidad'");
             }
 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorNivelEducativo(nivelEducativo);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionesPorNivelEducativo(nivelEducativo);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPorNivelEducativo: ${error}` });
@@ -158,11 +158,65 @@ export class PublicacionControlador {
                 return
             }
 
-            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorUsuario(id);
+            const resultado = await this.modeloPublicacion.ObtenerPublicacionesPorUsuario(id);
             manejarResultado(res, resultado);
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPorUsuario: ${error}` });
             responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones del usuario");
+        }
+    }
+
+    DarLike = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+            const idUsuario = req.idUsuario;
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.DarLike(idPublicacion, idUsuario);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en DarLike: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al dar like a la publicación");
+        }
+    }
+
+    QuitarLike = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+            const idUsuario = req.idUsuario;
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.QuitarLike(idPublicacion, idUsuario);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en QuitarLike: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al quitar like de la publicación");
+        }
+    }
+
+    VerificarLike = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+            const idUsuario = req.idUsuario;
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.VerificarLike(idPublicacion, idUsuario);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en VerificarLike: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al verificar el like de la publicación");
         }
     }
 
@@ -190,6 +244,74 @@ export class PublicacionControlador {
         } catch (error) {
             logger({ mensaje: `Error en EliminarPublicacion: ${error}` });
             responderConError(res, 500, "Ha ocurrido un error al eliminar la publicación");
+        }
+    }
+
+    RegistrarVisualizacion = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.RegistrarVisualizacion(idPublicacion);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en RegistrarVisualizacion: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al registrar la visualización");
+        }
+    }
+
+    RegistrarDescarga = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.RegistrarDescarga(idPublicacion);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en RegistrarDescarga: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al registrar la descarga");
+        }
+    }
+
+    AprobarPublicacion = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.AprobarPublicacion(idPublicacion);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en AprobarPublicacion: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al aprobar la publicación");
+        }
+    }
+
+    RechazarPublicacion = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const idPublicacion = parseInt(id);
+
+            if (!validarId(idPublicacion, res, "la publicación")) {
+                return;
+            }
+
+            const resultado = await this.modeloPublicacion.RechazarPublicacion(idPublicacion);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en RechazarPublicacion: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al rechazar la publicación");
         }
     }
 }
