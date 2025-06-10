@@ -1,8 +1,7 @@
 import zod from 'zod';
 import { SoloLetrasNumerosCaracteres, SoloRutas } from '../utilidades/RegexValidadores.js';
 
-const EstadoPublicacionEnum = zod.enum(['Aceptado', 'Rechazado', 'Eliminado', 'EnRevisión']);
-const EstadoUsuarioEnum = zod.enum(['Activo', 'Baneado']);
+const EstadoPublicacionEnum = zod.enum(['Aceptado', 'Rechazado', 'Eliminado', 'EnRevision']);
 const NivelEducativoEnum = zod.enum(['Preparatoria', 'Universidad']);
 
 const PublicacionEsquema = zod.object({
@@ -42,21 +41,13 @@ const PublicacionEliminacion = zod.object({
   .positive('El idUsuarioRegistrado debe ser positivo'),
 });
 
-
-const CorreoEsquema = zod.object({
-  correo: zod.string().email({invalid_type_error: 'El correo no es válido', required_error: 'El campo correo es requerido'}).max(256,
-    'El correo es demasiado grande. Max 256')
-});
-
-export function ValidarCorreo(entrada){
-  return CorreoEsquema.parse(entrada)
-}
-
 export function ValidarInsercionPublicacion(entrada) {
   return PublicacionEsquema.safeParse(entrada);
 }
 
-
 export function ValidarEliminacionPublicacion(entrada) {
   return PublicacionEliminacion.safeParse(entrada);
 }
+
+
+

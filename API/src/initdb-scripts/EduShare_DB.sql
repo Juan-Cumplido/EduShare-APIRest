@@ -119,6 +119,16 @@ CREATE TABLE Comentario (
 );
 GO
 
+CREATE TABLE LikePublicacion (
+    idLike INT IDENTITY(1,1) PRIMARY KEY,
+    idPublicacion INT NOT NULL,
+    idUsuario INT NOT NULL,
+    FOREIGN KEY (idPublicacion) REFERENCES Publicacion(idPublicacion),
+    FOREIGN KEY (idUsuario) REFERENCES UsuarioRegistrado(idUsuarioRegistrado),
+    UNIQUE(idPublicacion, idUsuario)
+);
+GO
+
 -- Tabla AgendaChat
 CREATE TABLE AgendaChat (
     idAgendaChat INT IDENTITY(1,1) PRIMARY KEY,
@@ -128,5 +138,18 @@ CREATE TABLE AgendaChat (
     fecha DATE NOT NULL,
     idUsuarioRegistrado INT NOT NULL,
     FOREIGN KEY (idUsuarioRegistrado) REFERENCES UsuarioRegistrado(idUsuarioRegistrado)
+);
+GO
+
+CREATE TABLE Notificaciones (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    UsuarioDestinoId NVARCHAR(100) NOT NULL,
+    Titulo NVARCHAR(255) NOT NULL,
+    Mensaje NVARCHAR(MAX),
+    UsuarioOrigenId NVARCHAR(100),
+    Tipo NVARCHAR(50),
+    DatosExtras NVARCHAR(MAX),
+    Leido BIT DEFAULT 0,
+    FechaCreacion DATETIME DEFAULT GETDATE()
 );
 GO

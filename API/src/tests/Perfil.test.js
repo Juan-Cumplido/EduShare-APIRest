@@ -89,20 +89,18 @@ describe('Pruebas del perfil de usuario', () => {
         }
 
         expect(response.statusCode).toBe(200)
-        if (response.statusCode === 200) {
-            expect(response.body).toEqual({
-                error: false,
-                estado: 200,
-                mensaje: expect.any(String),
-                datos: expect.objectContaining({
-                    idUsuarioRegistrado: expect.any(Number),
-                    nombre: expect.any(String),
-                    primerApellido: expect.any(String),
-                    correo: expect.any(String),
-                    nombreUsuario: expect.any(String)
-                })
-            });
-        }
+        expect(response.body).toEqual({
+            error: false,
+            estado: 200,
+            mensaje: expect.any(String),
+            datos: expect.objectContaining({
+                idUsuarioRegistrado: expect.any(Number),
+                nombre: expect.any(String),
+                primerApellido: expect.any(String),
+                correo: expect.any(String),
+                nombreUsuario: expect.any(String)
+            })
+        });
     }, 100000);
 
     test('Debería fallar al obtener perfil sin token', async () => {
@@ -113,8 +111,6 @@ describe('Pruebas del perfil de usuario', () => {
     }, 100000);
 
     test('Debería obtener el perfil con id exitosamente', async () => {
-
-
         const response = await request(app)
             .get(`/edushare/perfil/${idUsuario2}`)
         
@@ -123,22 +119,20 @@ describe('Pruebas del perfil de usuario', () => {
         }
 
         expect(response.statusCode).toBe(200)
-        if (response.statusCode === 200) {
-            expect(response.body).toEqual({
-                error: false,
-                estado: 200,
-                mensaje: expect.any(String),
-                datos: expect.objectContaining({
-                    idUsuarioRegistrado: expect.any(Number),
-                    nombre: expect.any(String),
-                    primerApellido: expect.any(String),
-                    nombreUsuario: expect.any(String),
-                    fotoPerfil: expect.any(String),
-                    idInstitucion: expect.any(Number),
+        expect(response.body).toEqual({
+            error: false,
+            estado: 200,
+            mensaje: expect.any(String),
+            datos: expect.objectContaining({
+                idUsuarioRegistrado: expect.any(Number),
+                nombre: expect.any(String),
+                primerApellido: expect.any(String),
+                nombreUsuario: expect.any(String),
+                fotoPerfil: expect.any(String),
+                idInstitucion: expect.any(Number),
 
-                })
-            });
-        }
+            })
+        });
     }, 100000);
 
     test('Debería actualizar el perfil exitosamente', async () => {
@@ -166,12 +160,19 @@ describe('Pruebas del perfil de usuario', () => {
     }, 100000);
 
     test('Debería fallar al actualizar perfil con datos inválidos', async () => {
+
+        const institucionNegativa = -1
+        const nombreUsuarioIncorrecto = "a"
+        const nombreVacío = ""
+        const correoInvalido = "correo-invalido"
+        const apellidoInvalido = "123"
+
         const datosInvalidos = {
-            nombre: "", // Nombre vacío
-            primerApellido: "123", // Solo números (no válido según regex)
-            correo: "correo-invalido", // Email inválido
-            nombreUsuario: "a", // Muy corto
-            idInstitucion: -1 // Número negativo
+            nombre: nombreVacío, 
+            primerApellido: apellidoInvalido, 
+            correo: correoInvalido, 
+            nombreUsuario: nombreUsuarioIncorrecto, 
+            idInstitucion: institucionNegativa 
         };
 
         const response = await request(app)
@@ -185,13 +186,16 @@ describe('Pruebas del perfil de usuario', () => {
     }, 100000);
 
     test('Debería fallar al actualizar perfil con institución inexistente', async () => {
+
+        const institucionInexistente = 9999
+
         const datosConInstitucionInexistente = {
             nombre: "Nombre",
             primerApellido: "Apellido",
             segundoApellido: null,
             correo: "test@valid.com",
             nombreUsuario: "validUser",
-            idInstitucion: 9999 // Institución que no existe
+            idInstitucion: institucionInexistente 
         };
 
         const response = await request(app)
@@ -223,9 +227,11 @@ describe('Pruebas del perfil de usuario', () => {
     }, 100000);
 
     test('Debería fallar al actualizar avatar con datos inválidos', async () => {
+        const rutaVacía = ""
+
         const datosAvatarInvalidos = {
             datos: {
-                fotoPerfil: "" // Foto vacía
+                fotoPerfil: rutaVacía 
             }
         };
 

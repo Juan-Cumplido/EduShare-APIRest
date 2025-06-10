@@ -12,6 +12,9 @@ export const CrearRutaPerfil = ({ ModeloPerfil }) => {
 
     router.get('/', ControladorPerfil.ObtenerPerfiles);
     router.get('/:idUsuario', ControladorPerfil.ObtenerPerfilPorId);
+    
+    //Se necesita recuperar perfiles con nombres de usuario %
+    //router.get('/:nombreUsuario, ControladorPerfil.ObtenerPerfilId)
 
     return router;
 }

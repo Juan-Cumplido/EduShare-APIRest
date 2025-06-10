@@ -59,7 +59,7 @@ export const ValidarAdminOPropietario = (modelo, campoId = 'id') => {
             
             if (esPropietario) {
                 return next()
-            }
+            } 
 
             return res.status(403).json({
                 error: true,
