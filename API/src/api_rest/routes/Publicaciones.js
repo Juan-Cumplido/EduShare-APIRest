@@ -20,13 +20,14 @@ export const CrearRutaPublicacion = ({ ModeloPublicacion }) => {
     router.get('/nivel/:nivelEducativo', ControladorPublicacion.ObtenerPorNivelEducativo);
     router.get('/usuario/:usuarioId', ControladorPublicacion.ObtenerPorUsuario);
 
-    //router.post('/:id/like', ValidarJwt, ControladorPublicacion.DarLike);
-    //router.delete('/:id/like', ValidarJwt, ControladorPublicacion.QuitarLike);
-    //router.post('/:id/view', ControladorPublicacion.RegistrarVisualizacion);
-    //router.post('/:id/download', ValidarJwt, ControladorPublicacion.RegistrarDescarga);
+    router.get('/:id/like', ValidarJwt, ControladorPublicacion.VerificarLike);
+    router.post('/:id/like', ValidarJwt, ControladorPublicacion.DarLike);
+    router.delete('/:id/like', ValidarJwt, ControladorPublicacion.QuitarLike);
+    router.post('/:id/vista', ControladorPublicacion.RegistrarVisualizacion);
+    router.post('/:id/descarga', ValidarJwt, ControladorPublicacion.RegistrarDescarga);
 
-    //router.patch('/:idPublicacion/aprobar',ValidarJwt, ValidarAdmin, ControladorPublicacion.AprobarPublicacion);
-    //router.patch('/:idPublicacion/rechazar',ValidarJwt, ValidarAdmin, ControladorPublicacion.RechazarPublicacion);
+    router.patch('/:id/aprobar',ValidarJwt, ValidarAdmin, ControladorPublicacion.AprobarPublicacion);
+    router.patch('/:id/rechazar',ValidarJwt, ValidarAdmin, ControladorPublicacion.RechazarPublicacion);
 
     //router.put('/:idPublicacion', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), ControladorPublicacion.ActualizarPublicacion)   
     //router.delete('/:idPublicacion', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), ControladorPublicacion.EliminarPublicacion);
