@@ -1,5 +1,5 @@
 import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
-import { manejarResultado, responderConError, responderConExito } from "../utilidades/Respuestas.js";
+import { manejarResultado, responderConError, responderConExito, validarId } from "../utilidades/Respuestas.js";
 import { logger } from "../utilidades/Logger.js";
 
 export class PublicacionControlador {
@@ -68,6 +68,101 @@ export class PublicacionControlador {
         } catch (error) {
             logger({ mensaje: `Error en ObtenerPublicaciones: ${error}` });
             responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones");
+        }
+    }
+
+    ObtenerPublicacionPorId = async (req, res) => {
+        try {
+            const { idPublicacion } = req.params;
+            const id = parseInt(idPublicacion);
+            
+            if (!validarId(id, res, "la publicación")) {
+                return
+            }            
+
+            const resultado = await this.modeloPublicacion.obtenerPublicacionPorId(id);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPublicacionPorId: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener la publicación");
+        }
+    }
+
+    ObtenerPublicacionesPropias = async (req, res) => {
+        try {
+            const idUsuario = req.idUsuario; 
+            const resultado = await this.modeloPublicacion.obtenerPublicacionesPropias(idUsuario);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPublicacionesPropias: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones propias");
+        }
+    }
+
+    ObtenerPorCategoria = async (req, res) => {
+        try {
+            const { categoriaId } = req.params;
+            const id = parseInt(categoriaId);
+            
+                if (!validarId(id, res, "la categoría")) {
+                    return
+                }
+
+            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorCategoria(id);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPorCategoria: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones por categoría");
+        }
+    }   
+
+    ObtenerPorRama = async (req, res) => {
+        try {
+            const { ramaId } = req.params;
+            const id = parseInt(ramaId);
+            
+            if (!validarId(id, res, "la rama")) {
+                return
+            }
+
+            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorRama(id);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPorRama: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones por rama");
+        }
+    }
+
+    ObtenerPorNivelEducativo = async (req, res) => {
+        try {
+            const { nivelEducativo } = req.params;
+            
+            if (nivelEducativo !== 'Preparatoria' && nivelEducativo !== 'Universidad') {
+                return responderConError(res, 400, "El nivel educativo debe ser 'Preparatoria' o 'Universidad'");
+            }
+
+            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorNivelEducativo(nivelEducativo);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPorNivelEducativo: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones por nivel educativo");
+        }
+    }
+
+    ObtenerPorUsuario = async (req, res) => {
+        try {
+            const { usuarioId } = req.params;
+            const id = parseInt(usuarioId);
+            
+            if (!validarId(id, res, "el usuario")) {
+                return
+            }
+
+            const resultado = await this.modeloPublicacion.obtenerPublicacionesPorUsuario(id);
+            manejarResultado(res, resultado);
+        } catch (error) {
+            logger({ mensaje: `Error en ObtenerPorUsuario: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones del usuario");
         }
     }
 
