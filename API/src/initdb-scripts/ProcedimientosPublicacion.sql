@@ -386,7 +386,277 @@ BEGIN
 END
 GO
 
----------------------------------------------------------------------------------------------
+CREATE PROCEDURE spi_DarLikePublicacion
+    @idPublicacion INT,
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        IF EXISTS (SELECT 1 FROM LikePublicacion WHERE idPublicacion = @idPublicacion AND idUsuario = @idUsuario)
+        BEGIN
+            SET @resultado = 409;
+            SET @mensaje = 'Ya has dado like a esta publicación';
+            RETURN;
+        END
+        
+        BEGIN TRANSACTION;
+        
+        INSERT INTO LikePublicacion (idPublicacion, idUsuario)
+        VALUES (@idPublicacion, @idUsuario);
+        
+        UPDATE Publicacion 
+        SET numeroLiker = numeroLiker + 1
+        WHERE idPublicacion = @idPublicacion;
+        
+        COMMIT TRANSACTION;
+        
+        SET @resultado = 201;
+        SET @mensaje = 'Like agregado exitosamente';
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor';
+    END CATCH
+END
+GO
+
+CREATE PROCEDURE spd_QuitarLikePublicacion
+    @idPublicacion INT,
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        IF NOT EXISTS (SELECT 1 FROM LikePublicacion WHERE idPublicacion = @idPublicacion AND idUsuario = @idUsuario)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'No has dado like a esta publicación';
+            RETURN;
+        END
+        
+        BEGIN TRANSACTION;
+        
+        DELETE FROM LikePublicacion 
+        WHERE idPublicacion = @idPublicacion AND idUsuario = @idUsuario;
+        
+        UPDATE Publicacion 
+        SET numeroLiker = numeroLiker - 1
+        WHERE idPublicacion = @idPublicacion;
+        
+        COMMIT TRANSACTION;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Like eliminado exitosamente';
+        
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor';
+    END CATCH
+END
+GO
+
+-- Procedimiento para verificar si un usuario ya dio like a una publicación
+CREATE OR ALTER PROCEDURE sps_VerificarLikeUsuario
+    @idPublicacion INT,
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM LikePublicacion WHERE idPublicacion = @idPublicacion AND idUsuario = @idUsuario)
+        BEGIN
+            SET @resultado = 200;
+            SET @mensaje = 'El usuario ya dio like a esta publicación';
+        END
+        ELSE
+        BEGIN
+            SET @resultado = 204;
+            SET @mensaje = 'El usuario no ha dado like a esta publicación';
+        END
+        
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor';
+    END CATCH
+END
+GO
+
+
+-- Procedimiento para registrar visualización
+CREATE OR ALTER PROCEDURE spu_RegistrarVisualizacion
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        UPDATE Publicacion 
+        SET numeroVisualizaciones = numeroVisualizaciones + 1
+        WHERE idPublicacion = @idPublicacion;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Visualización registrada correctamente';
+        
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor al registrar la visualización';
+    END CATCH
+END;
+GO
+
+-- Procedimiento para registrar descarga
+CREATE OR ALTER PROCEDURE spu_RegistrarDescarga
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        UPDATE Publicacion 
+        SET numeroDescargas = numeroDescargas + 1
+        WHERE idPublicacion = @idPublicacion;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Descarga registrada correctamente';
+        
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor al registrar la descarga';
+    END CATCH
+END;
+GO
+
+-- Procedimiento para aprobar publicación
+CREATE OR ALTER PROCEDURE spu_AprobarPublicacion
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion AND estado = 'EnRevision')
+        BEGIN
+            SET @resultado = 400;
+            SET @mensaje = 'Solo se pueden aprobar publicaciones en revisión';
+            RETURN;
+        END
+        
+        UPDATE Publicacion 
+        SET estado = 'Aceptado'
+        WHERE idPublicacion = @idPublicacion;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Publicación aprobada correctamente';
+        
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor al aprobar la publicación';
+    END CATCH
+END;
+GO
+
+-- Procedimiento para rechazar publicación
+CREATE OR ALTER PROCEDURE spu_RechazarPublicacion
+    @idPublicacion INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
+        BEGIN
+            SET @resultado = 404;
+            SET @mensaje = 'La publicación no existe';
+            RETURN;
+        END
+        
+        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion AND estado = 'EnRevision')
+        BEGIN
+            SET @resultado = 400;
+            SET @mensaje = 'Solo se pueden rechazar publicaciones en revisión';
+            RETURN;
+        END
+        
+        UPDATE Publicacion 
+        SET estado = 'Rechazado'
+        WHERE idPublicacion = @idPublicacion;
+        
+        SET @resultado = 200;
+        SET @mensaje = 'Publicación rechazada correctamente';
+        
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error interno del servidor al rechazar la publicación';
+    END CATCH
+END;
+GO
+
 
 CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdminoPropietario
     @idUsuario INT,
@@ -441,77 +711,6 @@ BEGIN
 
         SET @resultado = 200;
         SET @mensaje = 'Publicación eliminada exitosamente';
-
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SET @resultado = 500;
-        SET @mensaje = ERROR_MESSAGE();
-    END CATCH
-END
-GO
-
-
--- Procedimiento almacenado para incrementar el contador de descargas
-CREATE OR ALTER PROCEDURE spu_IncrementarDescarga
-    @idPublicacion INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'La publicación no existe';
-            RETURN;
-        END
-
-        UPDATE Publicacion
-        SET numeroDescargas = numeroDescargas + 1
-        WHERE idPublicacion = @idPublicacion;
-
-        SET @resultado = 200;
-        SET @mensaje = 'Descarga incrementada exitosamente';
-
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SET @resultado = 500;
-        SET @mensaje = ERROR_MESSAGE();
-    END CATCH
-END
-GO
-
--- Procedimiento almacenado para incrementar el contador de likes
-CREATE OR ALTER PROCEDURE spu_IncrementarLike
-    @idPublicacion INT,
-    @resultado INT OUTPUT,
-    @mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
-        BEGIN
-            SET @resultado = 404;
-            SET @mensaje = 'La publicación no existe';
-            RETURN;
-        END
-
-        UPDATE Publicacion
-        SET numeroLiker = numeroLiker + 1
-        WHERE idPublicacion = @idPublicacion;
-
-        SET @resultado = 200;
-        SET @mensaje = 'Like incrementado exitosamente';
 
         COMMIT TRANSACTION;
     END TRY
