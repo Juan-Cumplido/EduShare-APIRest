@@ -12,7 +12,17 @@ const CuentaEsquema = zod.object(
    
     nombre: zod.string({ invalid_type_error: 'El nombre ingresado no es válido',required_error: 'El nombre es un campo requerido'}).min(1).max(30).regex(SoloLetras),
     primerApellido: zod.string({ invalid_type_error: 'El primer apellido ingresado no es válido',required_error: 'El primer apellido es un campo requerido'}).min(1).max(30).regex(SoloLetras),
-    segundoApellido: zod.string({ invalid_type_error: 'El segundo apellido no es válido'}).min(0).max(80).regex(SoloLetras).nullable(),
+    segundoApellido: zod
+    .union([
+        zod.string().min(1).max(80).regex(SoloLetras, {
+        message: 'El segundo apellido solo puede contener letras',
+        }),
+        zod.literal(''),
+        zod.null(),
+    ])
+    .optional(),
+
+
     fotoPerfil: zod.string().max(500).regex(SoloRutas).optional(),
     
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
@@ -42,14 +52,10 @@ const CuentaEliminaciónEsquema = zod.object({
 
 const ContraseñaNuevaEsquema = zod.object({
     correo: zod.string().email({ message: "Formato de correo electrónico inválido" }),
-    codigo: zod.string().min(6, { message: "El código debe tener al menos 6 caracteres" }),
+    codigo: zod.string(),
     nuevaContrasenia: zod.string()
-        .min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
-        .regex(/[A-Z]/, { message: "La contraseña debe tener al menos una letra mayúscula" })
-        .regex(/[a-z]/, { message: "La contraseña debe tener al menos una letra minúscula" })
-        .regex(/[0-9]/, { message: "La contraseña debe tener al menos un número" })
-        .regex(/[^A-Za-z0-9]/, { message: "La contraseña debe tener al menos un carácter especial" })
 });
+
 
 const CuentaEsquemaEdicion = zod.object(
 {
