@@ -12,7 +12,17 @@ const CuentaEsquema = zod.object(
    
     nombre: zod.string({ invalid_type_error: 'El nombre ingresado no es válido',required_error: 'El nombre es un campo requerido'}).min(1).max(30).regex(SoloLetras),
     primerApellido: zod.string({ invalid_type_error: 'El primer apellido ingresado no es válido',required_error: 'El primer apellido es un campo requerido'}).min(1).max(30).regex(SoloLetras),
-    segundoApellido: zod.string({ invalid_type_error: 'El segundo apellido no es válido'}).min(0).max(80).regex(SoloLetras).nullable(),
+    segundoApellido: zod
+    .union([
+        zod.string().min(1).max(80).regex(SoloLetras, {
+        message: 'El segundo apellido solo puede contener letras',
+        }),
+        zod.literal(''),
+        zod.null(),
+    ])
+    .optional(),
+
+
     fotoPerfil: zod.string().max(500).regex(SoloRutas).optional(),
     
     idInstitucion: zod.number().int({ invalid_type_error: 'La institución no es válida',required_error: 'La institución es un campo requerido'}).positive()
