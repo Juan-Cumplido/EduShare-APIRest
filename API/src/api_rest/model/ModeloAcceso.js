@@ -134,6 +134,7 @@ export class ModeloAcceso {
                 .output('nombreUsuario', sql.NVarChar(15))
                 .output('primerApellido', sql.NVarChar(30))
                 .output('segundoApellido', sql.NVarChar(30))
+                .output('tipoAcceso', sql.NVarChar(20))
                 .execute('spi_VerificarCredenciales');
 
             resultadoVerificacion = MensajeDeRetornoBaseDeDatosInfoAdicional({
@@ -147,7 +148,8 @@ export class ModeloAcceso {
                         correo: ResultadoSolicitud.output.correo || null,
                         nombreUsuario: ResultadoSolicitud.output.nombreUsuario || null,
                         primerApellido: ResultadoSolicitud.output.primerApellido || null,
-                        segundoApellido: ResultadoSolicitud.output.segundoApellido || null      
+                        segundoApellido: ResultadoSolicitud.output.segundoApellido || null,
+                        tipoAcceso: ResultadoSolicitud.output.tipoAcceso || null      
                     }
                 }
             });
