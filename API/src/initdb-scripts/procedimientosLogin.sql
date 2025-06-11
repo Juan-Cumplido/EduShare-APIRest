@@ -9,7 +9,8 @@ CREATE OR ALTER PROCEDURE spi_VerificarCredenciales
     @correo NVARCHAR(256) OUTPUT,
     @nombreUsuario NVARCHAR(15) OUTPUT,
     @primerApellido NVARCHAR(30) OUTPUT,
-    @segundoApellido NVARCHAR(30) OUTPUT
+    @segundoApellido NVARCHAR(30) OUTPUT,
+    @tipoAcceso NVARCHAR(20) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -20,13 +21,23 @@ BEGIN
         
         IF @identifier LIKE '%_@_%.__%'
         BEGIN
-            SELECT @idAcceso = idAcceso, @estado = estado, @correo = correo, @nombreUsuario = nombreUsuario
+            SELECT 
+                @idAcceso = idAcceso, 
+                @estado = estado, 
+                @correo = correo, 
+                @nombreUsuario = nombreUsuario,
+                @tipoAcceso = tipoAcceso
             FROM Acceso
             WHERE correo = @identifier AND contrasenia = @contrasenia
         END
         ELSE
         BEGIN
-            SELECT @idAcceso = idAcceso, @estado = estado, @correo = correo, @nombreUsuario = nombreUsuario
+            SELECT 
+                @idAcceso = idAcceso, 
+                @estado = estado, 
+                @correo = correo, 
+                @nombreUsuario = nombreUsuario,
+                @tipoAcceso = tipoAcceso
             FROM Acceso
             WHERE nombreUsuario = @identifier AND contrasenia = @contrasenia
         END
