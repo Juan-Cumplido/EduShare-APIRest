@@ -51,7 +51,6 @@ export class PublicacionControlador {
                 });
             }
         } catch (error) {
-            console.error('[Controlador] Error inesperado:', error); 
             logger({ mensaje: error });
             res.status(500).json({
                 error: true,
