@@ -203,6 +203,7 @@ BEGIN
         SET @mensaje = 'Error al recuperar el perfil: ' + ERROR_MESSAGE();
     END CATCH
 END
+GO
 
 CREATE OR ALTER PROCEDURE sps_RecuperarPerfiles
     @resultado INT OUTPUT,
@@ -236,6 +237,7 @@ BEGIN
         SET @mensaje = 'Error al recuperar los perfiles: ' + ERROR_MESSAGE();
     END CATCH
 END
+GO
 
 CREATE OR ALTER PROCEDURE spi_CambiarContrasena
     @correo NVARCHAR(256),
