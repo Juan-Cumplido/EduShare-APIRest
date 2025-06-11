@@ -52,14 +52,10 @@ const CuentaEliminaciónEsquema = zod.object({
 
 const ContraseñaNuevaEsquema = zod.object({
     correo: zod.string().email({ message: "Formato de correo electrónico inválido" }),
-    codigo: zod.string().min(6, { message: "El código debe tener al menos 6 caracteres" }),
+    codigo: zod.string(),
     nuevaContrasenia: zod.string()
-        .min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
-        .regex(/[A-Z]/, { message: "La contraseña debe tener al menos una letra mayúscula" })
-        .regex(/[a-z]/, { message: "La contraseña debe tener al menos una letra minúscula" })
-        .regex(/[0-9]/, { message: "La contraseña debe tener al menos un número" })
-        .regex(/[^A-Za-z0-9]/, { message: "La contraseña debe tener al menos un carácter especial" })
 });
+
 
 const CuentaEsquemaEdicion = zod.object(
 {
