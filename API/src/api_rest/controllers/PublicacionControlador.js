@@ -1,10 +1,32 @@
-import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion } from "../schemas/Publicacion.js";
+import { ValidarInsercionPublicacion, ValidarEliminacionPublicacion, ValidarInsercionDocumento } from "../schemas/Publicacion.js";
 import { manejarResultado, responderConError, responderConExito, validarId } from "../utilidades/Respuestas.js";
 import { logger } from "../utilidades/Logger.js";
 
 export class PublicacionControlador {
     constructor({ ModeloPublicacion }) {
         this.modeloPublicacion = ModeloPublicacion;
+    }
+
+    CrearDocumento = async (req, res) => {
+        try {
+            const datosDocumento = {
+                titulo: req.body.titulo,
+                ruta: req.body.ruta,
+            };
+
+            const ResultadoValidacion = ValidarInsercionDocumento(datosDocumento);
+
+            if (!ResultadoValidacion.success) {
+                return responderConError(res, 400, ResultadoValidacion.error.formErrors);
+            }
+
+            const ResultadoInsercion = await this.modeloPublicacion.InsertarDocumento(ResultadoValidacion.data);
+            manejarResultado(res, ResultadoInsercion);
+
+        } catch (error) {
+            logger({ mensaje: `Error en CrearDocumento: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al crear el documento");
+        }
     }
 
     CrearPublicacion = async (req, res) => {

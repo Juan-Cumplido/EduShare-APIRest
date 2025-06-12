@@ -5,6 +5,42 @@ import { MensajeDeRetornoBaseDeDatos, MensajeRetornoBDId, MensajeDeRetornoBaseDe
 
 export class ModeloPublicacion {
 
+    static async InsertarDocumento(datos) {
+        let resultadoInsercion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const { titulo, ruta, idUsuarioRegistrado } = datos;
+
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .input('titulo', sql.NVarChar(100), titulo)
+                .input('ruta', sql.NVarChar(sql.MAX), ruta)
+                .input('idUsuarioRegistrado', sql.Int, idUsuarioRegistrado)
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .output('idDocumento', sql.Int)
+                .execute('spi_InsertarDocumento');
+
+            resultadoInsercion = MensajeRetornoBDId({
+                datos: {
+                    resultado: ResultadoSolicitud.output.resultado,
+                    mensaje: ResultadoSolicitud.output.mensaje,
+                    id: ResultadoSolicitud.output.idDocumento
+                }
+            });
+        } catch (error) {
+            throw error;
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoInsercion;
+    }
+
     static async InsertarPublicacion(datos) {
         let resultadoInsercion;
         const ConfiguracionConexion = RetornarTipoDeConexion();

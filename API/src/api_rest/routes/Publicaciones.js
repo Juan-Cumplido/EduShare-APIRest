@@ -10,6 +10,7 @@ export const CrearRutaPublicacion = ({ ModeloPublicacion }) => {
     const ControladorPublicacion = new PublicacionControlador({ ModeloPublicacion });
 
     router.post('/',ValidarJwt, ControladorPublicacion.CrearPublicacion)
+    router.post('/documento', ValidarJwt, ControladorPublicacion.CrearDocumento)
     
     router.get('/', ControladorPublicacion.ObtenerPublicaciones);
     router.get('/me', ValidarJwt, ControladorPublicacion.ObtenerPublicacionesPropias)
