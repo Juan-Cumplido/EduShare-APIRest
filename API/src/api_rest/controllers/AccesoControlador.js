@@ -238,7 +238,8 @@ export class AccesoControlador
                         correo: Resultado.datosAdicionales.correo,
                         nombreUsuario: Resultado.datosAdicionales.nombreUsuario,
                         primerApellido: Resultado.datosAdicionales.primerApellido,
-                        segundoApellido: Resultado.datosAdicionales.segundoApellido
+                        segundoApellido: Resultado.datosAdicionales.segundoApellido,
+                        tipoAcceso: Resultado.datosAdicionales.tipoAcceso
                     }
                 });
             } catch (errorToken) {
