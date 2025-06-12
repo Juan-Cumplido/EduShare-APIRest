@@ -78,6 +78,7 @@ afterAll(async () => {
 }, 100000);
 
 describe('Pruebas del módulo de Publicaciones', () => {
+
     test('Debería crear una publicación exitosamente', async () => {
         const datosPublicacion = {
             idCategoria: 1,
