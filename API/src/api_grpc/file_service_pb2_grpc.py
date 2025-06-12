@@ -44,8 +44,18 @@ class FileServiceStub(object):
                 request_serializer=file__service__pb2.UploadRequest.SerializeToString,
                 response_deserializer=file__service__pb2.UploadResponse.FromString,
                 _registered_method=True)
-        self.DownloadFile = channel.unary_unary(
-                '/fileservice.FileService/DownloadFile',
+        self.DownloadImage = channel.unary_unary(
+                '/fileservice.FileService/DownloadImage',
+                request_serializer=file__service__pb2.DownloadRequest.SerializeToString,
+                response_deserializer=file__service__pb2.DownloadResponse.FromString,
+                _registered_method=True)
+        self.DownloadPdf = channel.unary_unary(
+                '/fileservice.FileService/DownloadPdf',
+                request_serializer=file__service__pb2.DownloadRequest.SerializeToString,
+                response_deserializer=file__service__pb2.DownloadResponse.FromString,
+                _registered_method=True)
+        self.DownloadCover = channel.unary_unary(
+                '/fileservice.FileService/DownloadCover',
                 request_serializer=file__service__pb2.DownloadRequest.SerializeToString,
                 response_deserializer=file__service__pb2.DownloadResponse.FromString,
                 _registered_method=True)
@@ -66,7 +76,19 @@ class FileServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def DownloadFile(self, request, context):
+    def DownloadImage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DownloadPdf(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DownloadCover(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -85,8 +107,18 @@ def add_FileServiceServicer_to_server(servicer, server):
                     request_deserializer=file__service__pb2.UploadRequest.FromString,
                     response_serializer=file__service__pb2.UploadResponse.SerializeToString,
             ),
-            'DownloadFile': grpc.unary_unary_rpc_method_handler(
-                    servicer.DownloadFile,
+            'DownloadImage': grpc.unary_unary_rpc_method_handler(
+                    servicer.DownloadImage,
+                    request_deserializer=file__service__pb2.DownloadRequest.FromString,
+                    response_serializer=file__service__pb2.DownloadResponse.SerializeToString,
+            ),
+            'DownloadPdf': grpc.unary_unary_rpc_method_handler(
+                    servicer.DownloadPdf,
+                    request_deserializer=file__service__pb2.DownloadRequest.FromString,
+                    response_serializer=file__service__pb2.DownloadResponse.SerializeToString,
+            ),
+            'DownloadCover': grpc.unary_unary_rpc_method_handler(
+                    servicer.DownloadCover,
                     request_deserializer=file__service__pb2.DownloadRequest.FromString,
                     response_serializer=file__service__pb2.DownloadResponse.SerializeToString,
             ),
@@ -156,7 +188,7 @@ class FileService(object):
             _registered_method=True)
 
     @staticmethod
-    def DownloadFile(request,
+    def DownloadImage(request,
             target,
             options=(),
             channel_credentials=None,
@@ -169,7 +201,61 @@ class FileService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/fileservice.FileService/DownloadFile',
+            '/fileservice.FileService/DownloadImage',
+            file__service__pb2.DownloadRequest.SerializeToString,
+            file__service__pb2.DownloadResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DownloadPdf(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/fileservice.FileService/DownloadPdf',
+            file__service__pb2.DownloadRequest.SerializeToString,
+            file__service__pb2.DownloadResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DownloadCover(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/fileservice.FileService/DownloadCover',
             file__service__pb2.DownloadRequest.SerializeToString,
             file__service__pb2.DownloadResponse.FromString,
             options,

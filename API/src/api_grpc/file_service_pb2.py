@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x66ile_service.proto\x12\x0b\x66ileservice\"E\n\rUploadRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08\x66ilename\x18\x02 \x01(\t\x12\x10\n\x08\x66iledata\x18\x03 \x01(\x0c\"=\n\x0eUploadResponse\x12\x11\n\tfile_path\x18\x01 \x01(\t\x12\x18\n\x10\x63over_image_path\x18\x02 \x01(\t\"(\n\x0f\x44ownloadRequest\x12\x15\n\rrelative_path\x18\x01 \x01(\t\"6\n\x10\x44ownloadResponse\x12\x10\n\x08\x66iledata\x18\x01 \x01(\x0c\x12\x10\n\x08\x66ilename\x18\x02 \x01(\t2\xe8\x01\n\x0b\x46ileService\x12\x46\n\x0bUploadImage\x12\x1a.fileservice.UploadRequest\x1a\x1b.fileservice.UploadResponse\x12\x44\n\tUploadPdf\x12\x1a.fileservice.UploadRequest\x1a\x1b.fileservice.UploadResponse\x12K\n\x0c\x44ownloadFile\x12\x1c.fileservice.DownloadRequest\x1a\x1d.fileservice.DownloadResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x66ile_service.proto\x12\x0b\x66ileservice\"E\n\rUploadRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08\x66ilename\x18\x02 \x01(\t\x12\x10\n\x08\x66iledata\x18\x03 \x01(\x0c\"=\n\x0eUploadResponse\x12\x11\n\tfile_path\x18\x01 \x01(\t\x12\x18\n\x10\x63over_image_path\x18\x02 \x01(\t\"(\n\x0f\x44ownloadRequest\x12\x15\n\rrelative_path\x18\x01 \x01(\t\"6\n\x10\x44ownloadResponse\x12\x10\n\x08\x66iledata\x18\x01 \x01(\x0c\x12\x10\n\x08\x66ilename\x18\x02 \x01(\t2\x83\x03\n\x0b\x46ileService\x12\x46\n\x0bUploadImage\x12\x1a.fileservice.UploadRequest\x1a\x1b.fileservice.UploadResponse\x12\x44\n\tUploadPdf\x12\x1a.fileservice.UploadRequest\x1a\x1b.fileservice.UploadResponse\x12L\n\rDownloadImage\x12\x1c.fileservice.DownloadRequest\x1a\x1d.fileservice.DownloadResponse\x12J\n\x0b\x44ownloadPdf\x12\x1c.fileservice.DownloadRequest\x1a\x1d.fileservice.DownloadResponse\x12L\n\rDownloadCover\x12\x1c.fileservice.DownloadRequest\x1a\x1d.fileservice.DownloadResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,5 +40,5 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DOWNLOADRESPONSE']._serialized_start=211
   _globals['_DOWNLOADRESPONSE']._serialized_end=265
   _globals['_FILESERVICE']._serialized_start=268
-  _globals['_FILESERVICE']._serialized_end=500
+  _globals['_FILESERVICE']._serialized_end=655
 # @@protoc_insertion_point(module_scope)
