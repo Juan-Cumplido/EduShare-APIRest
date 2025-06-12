@@ -13,6 +13,11 @@ CREATE OR ALTER PROCEDURE spi_InsertarPublicacion
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    SET @resultado = 500;
+    SET @mensaje = 'Error interno';
+    SET @idPublicacion = NULL;
+    
     BEGIN TRY
         BEGIN TRANSACTION;
 
@@ -20,21 +25,21 @@ BEGIN
         BEGIN
             SET @resultado = 404;
             SET @mensaje = 'El usuario registrado no existe';
-            RETURN;
+            GOTO ExitWithRollback;
         END
 
         IF NOT EXISTS (SELECT 1 FROM MateriaYRama WHERE idMateriaYRama = @idMateriaYRama)
         BEGIN
             SET @resultado = 404;
             SET @mensaje = 'La materia en esa rama o la rama no existe';
-            RETURN;
+            GOTO ExitWithRollback;
         END
 
         IF NOT EXISTS (SELECT 1 FROM Documento WHERE idDocumento = @idDocumento)
         BEGIN
             SET @resultado = 404;
             SET @mensaje = 'El documento no existe';
-            RETURN;
+            GOTO ExitWithRollback;
         END
 
         INSERT INTO Publicacion (
@@ -69,9 +74,19 @@ BEGIN
         SET @mensaje = 'Publicación creada exitosamente';
 
         COMMIT TRANSACTION;
+        GOTO ExitSuccess;
+
+        ExitWithRollback:
+            ROLLBACK TRANSACTION;
+            GOTO ExitSuccess;
+
+        ExitSuccess:
+            -- Exit point for successful execution or controlled rollback
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
         SET @resultado = 500;
         SET @mensaje = ERROR_MESSAGE();
         SET @idPublicacion = NULL;
@@ -99,9 +114,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        INNER JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.estado = 'Aceptado'
         ORDER BY p.fecha DESC;
 
@@ -142,9 +160,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
-            ur.nombre + ' ' + ur.apellidoPaterno + ' ' + ur.apellidoMaterno AS nombreCompleto
+            d.titulo,
+            d.ruta,
+            ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        INNER JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.idPublicacion = @idPublicacion AND p.estado = 'Aceptado';
 
         -- Incrementar número de visualizaciones
@@ -190,9 +211,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.idUsuarioRegistrado = @idUsuario
         ORDER BY p.fecha DESC;
 
@@ -234,9 +258,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.idCategoria = @idCategoria AND p.estado = 'Aceptado'
         ORDER BY p.fecha DESC;
 
@@ -279,9 +306,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN Documento d ON p.idDocumento = d.idDocumento
         JOIN MateriaYRama myr ON p.idMateriaYRama = myr.idMateriaYRama
         WHERE myr.idRama = @idRama AND p.estado = 'Aceptado'
         ORDER BY p.fecha DESC;
@@ -326,9 +356,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.nivelEducativo = @nivelEducativo AND p.estado = 'Aceptado'
         ORDER BY p.fecha DESC;
 
@@ -370,9 +403,12 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+            d.titulo,
+            d.ruta,
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
-        INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        JOIN Documento d ON p.idDocumento = d.idDocumento
         WHERE p.idUsuarioRegistrado = @idUsuario AND p.estado = 'Aceptado'
         ORDER BY p.fecha DESC;
 
