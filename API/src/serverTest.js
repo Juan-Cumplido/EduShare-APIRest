@@ -45,7 +45,6 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
         }
     );
 
-    // Ruta para probar con body en lugar de params
     app.put('/test/admin-propietario-body', 
         ValidarJwt, 
         ValidarAdminOPropietario(ModeloPublicacion), 
@@ -59,7 +58,6 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
         }
     );
 
-    // Ruta sin parámetro ID para probar error 400
     app.get('/test/admin-propietario-sin-id', 
         ValidarJwt, 
         ValidarAdminOPropietario(ModeloPublicacion), 
@@ -71,7 +69,6 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
         }
     );
 
-    // Ruta con campo personalizado
     app.get('/test/admin-propietario-custom/:idPublicacion', 
         ValidarJwt, 
         ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), 
@@ -85,7 +82,6 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
         }
     );
 
-    // Ruta sin parámetro para campo personalizado
     app.get('/test/admin-propietario-custom-sin-id', 
         ValidarJwt, 
         ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), 

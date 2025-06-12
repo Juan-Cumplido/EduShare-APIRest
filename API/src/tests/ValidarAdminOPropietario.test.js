@@ -28,7 +28,6 @@ beforeAll(async () => {
     servidor = servidorCreado;
     app = appCreada;
 
-    // Crear cuenta administrador
     const datosAdmin = {
         "correo": correoAdministrador,
         "contrasenia": contraseñaAdmin,
@@ -41,7 +40,6 @@ beforeAll(async () => {
 
     await request(servidor).post("/edushare/acceso/registroAdmin").send(datosAdmin);
 
-    // Crear primera cuenta usuario normal
     const datosUsuarioNormal = {
         "correo": correoUsuarioNormal,
         "contrasenia": contraseñaUsuarioNormal,
@@ -54,7 +52,6 @@ beforeAll(async () => {
 
     await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioNormal);
 
-    // Crear segunda cuenta usuario normal
     const datosUsuarioNormal2 = {
         "correo": correoUsuarioNormal2,
         "contrasenia": contraseñaUsuarioNormal2,
@@ -67,7 +64,6 @@ beforeAll(async () => {
 
    await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioNormal2);
 
-    // Hacer login para obtener tokens
     const loginAdmin = await request(servidor)
         .post("/edushare/acceso/login")
         .send({
