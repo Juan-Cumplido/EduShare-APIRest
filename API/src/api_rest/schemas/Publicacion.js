@@ -31,6 +31,21 @@ const PublicacionEsquema = zod.object({
     .positive('El idDocumento debe ser positivo'),
 });
 
+const DocumentoEsquema = zod.object({
+  titulo: zod.string({
+    required_error: 'El título es un campo requerido',
+    invalid_type_error: 'El título no es válido'
+  })
+  .min(1, 'El título debe tener al menos 1 carácter')
+  .max(100, 'El título debe tener máximo 100 caracteres')
+  .regex(SoloLetrasNumerosCaracteres, 'El título solo puede contener letras, números y caracteres permitidos'),
+
+  ruta: zod.string({ invalid_type_error: 'La foto de perfil debe ser una cadena de texto', required_error: 'La foto de perfil es un campo requerido'})
+    .min(1, "La ruta de la foto de perfil es requerida")
+    .max(500, "La ruta de la foto de perfil es demasiado larga")
+});
+
+
 const PublicacionEliminacion = zod.object({
   idPublicacion: zod.number({ invalid_type_error: 'El idPublicacion no es válido', required_error: 'El idPublicacion es un campo requerido' })
     .int('El idPublicacion debe ser un entero')
@@ -39,10 +54,18 @@ const PublicacionEliminacion = zod.object({
   idUsuarioRegistrado: zod.number({ invalid_type_error: 'El idUsuarioRegistrado no es válido', required_error: 'El idUsuarioRegistrado es un campo requerido' })
   .int('El idUsuarioRegistrado debe ser un entero')
   .positive('El idUsuarioRegistrado debe ser positivo'),
+
+  idUsuarioRegistrado: zod.number({ invalid_type_error: 'El idUsuario no es válido', required_error: 'El idUsuario es un campo requerido' })
+    .int('El idUsuario debe ser un entero')
+    .positive('El idUsuario debe ser positivo'),
 });
 
 export function ValidarInsercionPublicacion(entrada) {
   return PublicacionEsquema.safeParse(entrada);
+}
+
+export function ValidarInsercionDocumento(entrada){
+  return DocumentoEsquema.safeParse(entrada);
 }
 
 export function ValidarEliminacionPublicacion(entrada) {

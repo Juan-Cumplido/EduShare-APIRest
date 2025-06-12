@@ -42,7 +42,6 @@ BEGIN
         
         SET @idAcceso = SCOPE_IDENTITY();
         
-        -- Insertar en la tabla UsuarioRegistrado
         INSERT INTO UsuarioRegistrado (nombre, primerApellido, segundoApellido, idAcceso, idInstitucion, fotoPerfil)
         VALUES (@nombre, @primerApellido, @segundoApellido, @idAcceso, @idInstitucion, @fotoPerfil);
         
