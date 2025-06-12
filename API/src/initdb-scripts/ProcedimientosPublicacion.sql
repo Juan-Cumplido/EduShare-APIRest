@@ -131,6 +131,7 @@ BEGIN
         SET @mensaje = ERROR_MESSAGE();
     END CATCH
 END
+GO
 
 CREATE OR ALTER PROCEDURE sps_ObtenerPublicacionPorId
     @idPublicacion INT,
@@ -160,8 +161,11 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
+<<<<<<< HEAD
             d.titulo,
             d.ruta,
+=======
+>>>>>>> ad385a4a802c66d684df62d76905a6e426d0edc2
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
@@ -722,7 +726,7 @@ BEGIN
         SET @mensaje = 'El usuario no es el propietario de la publicación';
     END
 END
-
+GO
 
 CREATE OR ALTER PROCEDURE spd_EliminarPublicacion
     @idPublicacion INT,
