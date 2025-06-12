@@ -1,3 +1,55 @@
+CREATE OR ALTER PROCEDURE spi_InsertarDocumento
+    @titulo NVARCHAR(100),
+    @ruta NVARCHAR(MAX),
+    @idUsuarioRegistrado INT, 
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT,
+    @idDocumento INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SET @resultado = 500;
+    SET @mensaje = 'Error interno';
+    SET @idDocumento = NULL;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM UsuarioRegistrado WHERE idUsuarioRegistrado = @idUsuarioRegistrado)
+        BEGIN
+            SET @resultado = 401;
+            SET @mensaje = 'Usuario no autorizado';
+            GOTO ExitWithRollback;
+        END
+
+        INSERT INTO Documento (titulo, ruta)
+        VALUES (@titulo, @ruta);
+        
+        SET @idDocumento = SCOPE_IDENTITY();
+        SET @resultado = 201;
+        SET @mensaje = 'Documento creado exitosamente';
+
+        COMMIT TRANSACTION;
+        GOTO ExitSuccess;
+
+        ExitWithRollback:
+            ROLLBACK TRANSACTION;
+            GOTO ExitSuccess;
+
+        ExitSuccess:
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 500;
+        SET @mensaje = ERROR_MESSAGE();
+        SET @idDocumento = NULL;
+    END CATCH
+END
+GO
+
 -- Procedimiento almacenado para insertar una nueva publicación
 CREATE OR ALTER PROCEDURE spi_InsertarPublicacion
     @idCategoria INT,
@@ -81,7 +133,6 @@ BEGIN
             GOTO ExitSuccess;
 
         ExitSuccess:
-            -- Exit point for successful execution or controlled rollback
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0
@@ -161,11 +212,8 @@ BEGIN
             p.idUsuarioRegistrado,
             p.idMateriaYRama,
             p.idDocumento,
-<<<<<<< HEAD
             d.titulo,
             d.ruta,
-=======
->>>>>>> ad385a4a802c66d684df62d76905a6e426d0edc2
             ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
         FROM Publicacion p
         INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
