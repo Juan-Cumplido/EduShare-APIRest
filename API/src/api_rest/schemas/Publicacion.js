@@ -32,18 +32,21 @@ const PublicacionEsquema = zod.object({
 });
 
 const DocumentoEsquema = zod.object({
-  titulo: zod.string({
-    required_error: 'El título es un campo requerido',
-    invalid_type_error: 'El título no es válido'
-  })
-  .min(1, 'El título debe tener al menos 1 carácter')
-  .max(100, 'El título debe tener máximo 100 caracteres')
-  .regex(SoloLetrasNumerosCaracteres, 'El título solo puede contener letras, números y caracteres permitidos'),
+  titulo: zod.string()
+    .min(1, 'El título debe tener al menos 1 carácter')
+    .max(100, 'El título debe tener máximo 100 caracteres')
+    .regex(SoloLetrasNumerosCaracteres, 'El título solo puede contener letras, números y caracteres permitidos'),
 
-  ruta: zod.string({ invalid_type_error: 'La foto de perfil debe ser una cadena de texto', required_error: 'La foto de perfil es un campo requerido'})
-    .min(1, "La ruta de la foto de perfil es requerida")
-    .max(500, "La ruta de la foto de perfil es demasiado larga")
+  ruta: zod.string()
+    .min(1, "La ruta es requerida")
+    .max(500, "La ruta es demasiado larga"),
+
+  idUsuarioRegistrado: zod.number({
+    required_error: 'El ID de usuario es requerido',
+    invalid_type_error: 'El ID de usuario debe ser un número'
+  })
 });
+
 
 
 const PublicacionEliminacion = zod.object({
