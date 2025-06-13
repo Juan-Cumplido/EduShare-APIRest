@@ -41,6 +41,50 @@ export class ModeloPublicacion {
         return resultadoInsercion;
     }
 
+static async EliminarPublicacion(idPublicacion) {
+    let resultadoEliminacion;
+    const ConfiguracionConexion = RetornarTipoDeConexion();
+    let conexion;
+    
+    try {
+        conexion = await sql.connect(ConfiguracionConexion);
+
+        const Solicitud = conexion.request();
+        const ResultadoSolicitud = await Solicitud
+            .input('idPublicacion', sql.Int, idPublicacion)
+            .output('resultado', sql.Int)
+            .output('mensaje', sql.NVarChar(200))
+            .execute('sp_EliminarPublicacion');
+
+        console.log("Resultado del stored procedure:", ResultadoSolicitud.output);
+
+        resultadoEliminacion = MensajeDeRetornoBaseDeDatosAcceso({
+            datos: ResultadoSolicitud.output
+        });
+        
+        console.log("Resultado procesado:", resultadoEliminacion);
+        
+    } catch (error) {
+        console.log("Ha ocurrido un error en el método eliminar publicación del modelo")
+        console.log(error)
+        
+        // CRITICAL: Set error result when catch block executes
+        resultadoEliminacion = MensajeDeRetornoBaseDeDatosAcceso({
+            datos: {
+                resultado: 0,
+                mensaje: "Error al conectar con la base de datos"
+            }
+        });
+    } finally {
+        if (conexion) {
+            await sql.close();
+        }
+    }
+    
+    console.log("Retornando resultado:", resultadoEliminacion);
+    return resultadoEliminacion;
+}
+
     static async InsertarPublicacion(datos) {
         let resultadoInsercion;
         const ConfiguracionConexion = RetornarTipoDeConexion();
