@@ -216,6 +216,34 @@ static async EliminarPublicacion(idPublicacion) {
         return resultadoRecuperacion;
     }
 
+    
+    static async ObtenerPublicacionesPendientes() {
+        let resultadoRecuperacion;
+        const ConfiguracionConexion = RetornarTipoDeConexion();
+        let conexion;
+        
+        try {
+            conexion = await sql.connect(ConfiguracionConexion);
+            const Solicitud = conexion.request();
+            const ResultadoSolicitud = await Solicitud
+                .output('resultado', sql.Int)
+                .output('mensaje', sql.NVarChar(200))
+                .execute('sps_ObtenerPublicacionesPendientes');
+
+            resultadoRecuperacion = MensajeDeRetornoBaseDeDatosCatalogo({ 
+                datos: ResultadoSolicitud.output,
+                recordset: ResultadoSolicitud.recordset
+            })
+        } catch (error) {
+            throw error
+        } finally {
+            if (conexion) {
+                await sql.close();
+            }
+        }
+        return resultadoRecuperacion;
+    }
+
     static async ObtenerPublicacionesPorCategoria(idCategoria) {
         let resultadoRecuperacion;
         const ConfiguracionConexion = RetornarTipoDeConexion();

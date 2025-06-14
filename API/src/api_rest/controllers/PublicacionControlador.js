@@ -111,6 +111,16 @@ export class PublicacionControlador {
         }
     }
 
+    ObtenerPublicacionesPendientes = async (req, res) => {
+        try {
+            const resultadoRecuperacion = await this.modeloPublicacion.ObtenerPublicacionesPendientes();
+            manejarResultado(res, resultadoRecuperacion)
+        } catch (error){
+            logger({ mensaje: `Error en ObtenerPublicacionesPendientes: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones");
+        }
+    }
+    
     ObtenerPublicacionPorId = async (req, res) => {
         try {
             const { idPublicacion } = req.params;

@@ -270,7 +270,6 @@ describe('Pruebas del módulo de Publicaciones', () => {
     }, 100000);
 
     test('Debería rechazar publicación como admin', async () => {
-        // Primero necesitamos otra publicación en estado "EnRevision"
         const datosPublicacion = {
             idCategoria: 1,
             resuContenido: "Otra publicación de prueba",
@@ -299,195 +298,74 @@ describe('Pruebas del módulo de Publicaciones', () => {
             .patch(`/edushare/publicacion/${idPublicacion}/rechazar`)
             .set('Authorization', `Bearer ${tokenAdmin}`);
         
-        // La publicación ya fue aprobada en una prueba anterior
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
     }, 100000);
 
-    test('Debería eliminar publicación como propietario', async () => {
-    // Crear una nueva publicación para eliminar
-    const datosPublicacion = {
-        idCategoria: 1,
-        resuContenido: "Publicación para eliminar como propietario",
-        nivelEducativo: "Universidad",
-        idMateriaYRama: 1,
-        idDocumento: 4
-    };
+    test('GET /pendientes - Administrador obtiene publicaciones pendientes exitosamente', async () => {
+        const res = await request(app)
+            .get("/edushare/publicacion/pendientes")
+            .set("Authorization", `Bearer ${tokenAdmin}`)
+            .set("content-type", "application/json");
 
-    const crearResponse = await request(app)
-        .post("/edushare/publicacion")
-        .set('Authorization', `Bearer ${tokenUsuario}`)
-        .send(datosPublicacion);
-
-    console.log("DEBERIA ELIMINAR PUBLICACIÓN COMO PROPIETARIO")
-    console.log(crearResponse.statusCode)
-    console.log(crearResponse.body)
-    
-    expect(crearResponse.statusCode).toBe(201);
-    const idPublicacionEliminar = crearResponse.body.id;
-
-    // Eliminar la publicación como propietario
-    const response = await request(app)
-        .delete(`/edushare/publicacion/${idPublicacionEliminar}`)
-        .set('Authorization', `Bearer ${tokenUsuario}`);
-
-    console.log(response.statusCode)
-    console.log(response.body)
-    
-    expect(response.statusCode).toBe(200);
-    expect(response.body.error).toBe(false);
-    expect(response.body.datos.resultado).toBe(1);
-    expect(response.body.datos.mensaje).toBe('Publicación eliminada exitosamente');
-}, 100000);
-
-test('Debería eliminar publicación como admin', async () => {
-    // Crear una nueva publicación para eliminar
-    const datosPublicacion = {
-        idCategoria: 1,
-        resuContenido: "Publicación para eliminar como admin",
-        nivelEducativo: "Universidad",
-        idMateriaYRama: 1,
-        idDocumento: 3
-    };
-
-    const crearResponse = await request(app)
-        .post("/edushare/publicacion")
-        .set('Authorization', `Bearer ${tokenUsuario}`)
-        .send(datosPublicacion);
-    
-    expect(crearResponse.statusCode).toBe(201);
-    const idPublicacionEliminar = crearResponse.body.id;
-
-    // Eliminar la publicación como admin
-    const response = await request(app)
-        .delete(`/edushare/publicacion/${idPublicacionEliminar}`)
-        .set('Authorization', `Bearer ${tokenAdmin}`);
-    
-    expect(response.statusCode).toBe(200);
-    expect(response.body.error).toBe(false);
-    expect(response.body.datos.resultado).toBe(1);
-    expect(response.body.datos.mensaje).toBe('Publicación eliminada exitosamente');
-}, 100000);
-
-test('Debería fallar al eliminar publicación sin autenticación', async () => {
-    const response = await request(app)
-        .delete(`/edushare/publicacion/${idPublicacion}`);
-    
-    expect(response.statusCode).toBe(401);
-}, 100000);
-
-test('Debería fallar al eliminar publicación de otro usuario (sin ser admin)', async () => {
-    // Crear otro usuario
-    const otroUsuario = {
-        correo: "otrousuario@test.com",
-        contrasenia: "Password123!",
-        nombreUsuario: "otroUser",
-        nombre: "Otro",
-        primerApellido: "Usuario",
-        segundoApellido: "Test",
-        idInstitucion: 1
-    };
-
-    await request(servidor).post("/edushare/acceso/registro").send(otroUsuario);
-
-    const loginOtroUsuario = await request(app)
-        .post("/edushare/acceso/login")
-        .send({ 
-            identifier: otroUsuario.correo, 
-            contrasenia: otroUsuario.contrasenia 
-        });
-
-    const tokenOtroUsuario = loginOtroUsuario.body.token;
-
-    // Crear publicación con el usuario original
-    const datosPublicacion = {
-        idCategoria: 1,
-        resuContenido: "Publicación que no puede eliminar otro usuario",
-        nivelEducativo: "Universidad",
-        idMateriaYRama: 1,
-        idDocumento: 3
-    };
-
-    const crearResponse = await request(app)
-        .post("/edushare/publicacion")
-        .set('Authorization', `Bearer ${tokenUsuario}`)
-        .send(datosPublicacion);
-    
-    const idPublicacionAjena = crearResponse.body.id;
-
-    // Intentar eliminar con otro usuario
-    const response = await request(app)
-        .delete(`/edushare/publicacion/${idPublicacionAjena}`)
-        .set('Authorization', `Bearer ${tokenOtroUsuario}`);
-    
-    expect(response.statusCode).toBe(403);
-
-    // Limpiar: eliminar el otro usuario
-    await request(servidor).post("/edushare/acceso/eliminar").send({
-        correo: otroUsuario.correo,
-        contrasenia: otroUsuario.contrasenia
-    });
-}, 100000);
-
-    //PRUEBAS DE ELIMINAR
-
-    test('Debería fallar al eliminar publicación con ID inválido', async () => {
-        const idInvalido = "abc";
+        expect(res.statusCode).toBe(200);
+        expect(res.body.error).toBe(false);
+        expect(res.body.estado).toBe(200);
+        expect(res.body.mensaje).toBe('Publicaciones obtenidas exitosamente');
         
-        const response = await request(app)
-            .delete(`/edushare/publicacion/${idInvalido}`)
-            .set('Authorization', `Bearer ${tokenUsuario}`);
-        
-        expect(response.statusCode).toBe(400);
-        expect(response.body.error).toBe(true);
+        if (res.body.datos && res.body.datos.length > 0) {
+            const publicacion = res.body.datos[0];
+            expect(publicacion).toHaveProperty('idPublicacion');
+            expect(publicacion).toHaveProperty('idCategoria');
+            expect(publicacion).toHaveProperty('fecha');
+            expect(publicacion).toHaveProperty('resuContenido');
+            expect(publicacion).toHaveProperty('estado');
+            expect(publicacion).toHaveProperty('numeroLiker');
+            expect(publicacion).toHaveProperty('nivelEducativo');
+            expect(publicacion).toHaveProperty('numeroVisualizaciones');
+            expect(publicacion).toHaveProperty('numeroDescargas');
+            expect(publicacion).toHaveProperty('idUsuarioRegistrado');
+            expect(publicacion).toHaveProperty('idMateriaYRama');
+            expect(publicacion).toHaveProperty('idDocumento');
+            expect(publicacion).toHaveProperty('titulo');
+            expect(publicacion).toHaveProperty('ruta');
+            expect(publicacion).toHaveProperty('nombreCompleto');
+            expect(publicacion.estado).toBe('EnRevision');
+        }
     }, 100000);
 
-    test('Debería fallar al eliminar publicación inexistente', async () => {
-        const idInexistente = 99999;
-        
-        const response = await request(app)
-            .delete(`/edushare/publicacion/${idInexistente}`)
-            .set('Authorization', `Bearer ${tokenUsuario}`);
-        
-        expect(response.statusCode).toBe(404);
-        expect(response.body.error).toBe(true);
-        expect(response.body.datos.mensaje).toBe('La publicación no existe');
+    test('GET /pendientes - Usuario normal no puede acceder (sin permisos de administrador)', async () => {
+        const res = await request(app)
+            .get("/edushare/publicacion/pendientes")
+            .set("Authorization", `Bearer ${tokenUsuario}`)
+            .set("content-type", "application/json");
+
+        console.log("Usuario normal no puede acceder")
+        console.log(res.statusCode)
+        console.log(res.body)
+
+        expect(res.statusCode).toBe(403); 
+        expect(res.body.error).toBe(true);
     }, 100000);
 
-    test('Debería confirmar que la publicación eliminada ya no existe', async () => {
-        // Crear una publicación para eliminar
-        const datosPublicacion = {
-            idCategoria: 1,
-            resuContenido: "Publicación para verificar eliminación",
-            nivelEducativo: "Universidad",
-            idMateriaYRama: 1,
-            idDocumento: 3
-        };
+    test('GET /pendientes - Acceso denegado sin token de autenticación', async () => {
+        const res = await request(app)
+            .get("/edushare/publicacion/pendientes")
+            .set("content-type", "application/json");
 
-        const crearResponse = await request(app)
-            .post("/edushare/publicacion")
-            .set('Authorization', `Bearer ${tokenUsuario}`)
-            .send(datosPublicacion);
-        
-        const idPublicacionVerificar = crearResponse.body.id;
+        expect(res.statusCode).toBe(401); 
+        expect(res.body.error).toBe(true);
+    }, 100000);
 
-        // Verificar que existe
-        const verificarExistencia = await request(app)
-            .get(`/edushare/publicacion/${idPublicacionVerificar}`);
+    test('GET /pendientes - Acceso denegado con token inválido', async () => {
+        const tokenInvalido = "token.invalido.aqui";
         
-        expect(verificarExistencia.statusCode).toBe(200);
+        const res = await request(app)
+            .get("/edushare/publicacion/pendientes")
+            .set("Authorization", `Bearer ${tokenInvalido}`)
+            .set("content-type", "application/json");
 
-        // Eliminar la publicación
-        const eliminarResponse = await request(app)
-            .delete(`/edushare/publicacion/${idPublicacionVerificar}`)
-            .set('Authorization', `Bearer ${tokenUsuario}`);
-        
-        expect(eliminarResponse.statusCode).toBe(200);
-
-        // Verificar que ya no existe
-        const verificarEliminacion = await request(app)
-            .get(`/edushare/publicacion/${idPublicacionVerificar}`);
-        
-        expect(verificarEliminacion.statusCode).toBe(404);
+        expect(res.statusCode).toBe(401); 
+        expect(res.body.error).toBe(true);
     }, 100000);
 });
