@@ -776,36 +776,47 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE spd_EliminarPublicacion
+CREATE PROCEDURE sp_EliminarPublicacion
     @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
     BEGIN TRY
-        BEGIN TRANSACTION;
-
         IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
         BEGIN
-            SET @resultado = 404;
+            SET @resultado = 0;
             SET @mensaje = 'La publicación no existe';
             RETURN;
         END
-
+        
+        BEGIN TRANSACTION;
+        
+        DECLARE @idDocumento INT;
+        SELECT @idDocumento = idDocumento FROM Publicacion WHERE idPublicacion = @idPublicacion;
+        
+        DELETE FROM LikePublicacion WHERE idPublicacion = @idPublicacion;
         DELETE FROM Comentario WHERE idPublicacion = @idPublicacion;
-
         DELETE FROM Publicacion WHERE idPublicacion = @idPublicacion;
-
-        SET @resultado = 200;
-        SET @mensaje = 'Publicación eliminada exitosamente';
-
+        
+        IF @idDocumento IS NOT NULL
+        BEGIN
+            DELETE FROM Documento WHERE idDocumento = @idDocumento;
+        END
+        
         COMMIT TRANSACTION;
+        
+        SET @resultado = 1;
+        SET @mensaje = 'Publicación eliminada exitosamente';
+        
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
-        SET @resultado = 500;
-        SET @mensaje = ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+            
+        SET @resultado = 0;
+        SET @mensaje = 'Error al eliminar la publicación: ' + ERROR_MESSAGE();
     END CATCH
 END
-GO
