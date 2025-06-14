@@ -259,65 +259,32 @@ export class PublicacionControlador {
             responderConError(res, 500, "Ha ocurrido un error al verificar el like de la publicación");
         }
     }
-EliminarPublicacion = async (req, res) => {
-    try {
-        const { idPublicacion } = req.params;
-        console.log("ID Publicación a eliminar:", idPublicacion);
-        
-        const datosEliminacion = {
-            idPublicacion: parseInt(idPublicacion),
-        };
-        
-        const ResultadoValidacion = ValidarEliminacionPublicacion(datosEliminacion);
-        
-        if (!ResultadoValidacion.success) {
-            console.log("Error en validación:", ResultadoValidacion.error);
-            return responderConError(res, 400, ResultadoValidacion.error.formErrors);
-        }
 
-        console.log("Llamando al modelo con ID:", ResultadoValidacion.data.idPublicacion);
-        
-        const ResultadoEliminacion = await this.modeloPublicacion.EliminarPublicacion(
-            ResultadoValidacion.data.idPublicacion
-        );
-
-        console.log("Resultado del modelo:", ResultadoEliminacion);
-
-        // Check if ResultadoEliminacion is undefined or null
-        if (!ResultadoEliminacion) {
-            console.log("ERROR: ResultadoEliminacion es undefined o null");
-            return responderConError(res, 500, "Ha ocurrido un error al eliminar la publicación");
-        }
-
-        // Use manejarResultado or handle response manually
-        if (typeof manejarResultado === 'function') {
-            return manejarResultado(res, ResultadoEliminacion);
-        } else {
-            // Manual handling if manejarResultado doesn't work as expected
-            if (ResultadoEliminacion.resultado === 1) {
-                return res.status(200).json({
-                    error: false,
-                    estado: 200,
-                    datos: {
-                        resultado: ResultadoEliminacion.resultado,
-                        mensaje: ResultadoEliminacion.mensaje
-                    }
-                });
-            } else {
-                return res.status(400).json({
-                    error: true,
-                    estado: 400,
-                    mensaje: ResultadoEliminacion.mensaje
-                });
+    EliminarPublicacion = async (req, res) => {
+        try {
+            const { idPublicacion } = req.params;
+            
+            const datosEliminacion = {
+                idPublicacion: parseInt(idPublicacion),
+            };
+            
+            const ResultadoValidacion = ValidarEliminacionPublicacion(datosEliminacion);
+            
+            if (!ResultadoValidacion.success) {
+                console.log("Error en validación:", ResultadoValidacion.error);
+                return responderConError(res, 400, ResultadoValidacion.error.formErrors);
             }
+            
+            const ResultadoEliminacion = await this.modeloPublicacion.EliminarPublicacion(ResultadoValidacion.data.idPublicacion);
+
+            manejarResultado(res, ResultadoEliminacion);
+            
+        } catch (error) {
+            console.log("Error en controlador EliminarPublicacion:", error);
+            logger({ mensaje: `Error en EliminarPublicacion: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al eliminar la publicación");
         }
-        
-    } catch (error) {
-        console.log("Error en controlador EliminarPublicacion:", error);
-        logger({ mensaje: `Error en EliminarPublicacion: ${error}` });
-        responderConError(res, 500, "Ha ocurrido un error al eliminar la publicación");
     }
-}
 
     RegistrarVisualizacion = async (req, res) => {
         try {
