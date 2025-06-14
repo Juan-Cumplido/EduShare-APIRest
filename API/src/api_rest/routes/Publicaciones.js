@@ -31,7 +31,7 @@ export const CrearRutaPublicacion = ({ ModeloPublicacion }) => {
     router.patch('/:id/rechazar',ValidarJwt, ValidarAdmin, ControladorPublicacion.RechazarPublicacion);
 
     //router.put('/:idPublicacion', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), ControladorPublicacion.ActualizarPublicacion)   
-    //router.delete('/:idPublicacion', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), ControladorPublicacion.EliminarPublicacion);
+    router.delete('/:idPublicacion', ValidarJwt, ValidarAdminOPropietario(ModeloPublicacion, 'idPublicacion'), ControladorPublicacion.EliminarPublicacion);
 
     return router;
 }
