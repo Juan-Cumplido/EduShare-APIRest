@@ -54,13 +54,6 @@ const PublicacionEliminacion = zod.object({
     .int('El idPublicacion debe ser un entero')
     .positive('El idPublicacion debe ser positivo'),
     
-  idUsuarioRegistrado: zod.number({ invalid_type_error: 'El idUsuarioRegistrado no es válido', required_error: 'El idUsuarioRegistrado es un campo requerido' })
-  .int('El idUsuarioRegistrado debe ser un entero')
-  .positive('El idUsuarioRegistrado debe ser positivo'),
-
-  idUsuarioRegistrado: zod.number({ invalid_type_error: 'El idUsuario no es válido', required_error: 'El idUsuario es un campo requerido' })
-    .int('El idUsuario debe ser un entero')
-    .positive('El idUsuario debe ser positivo'),
 });
 
 export function ValidarInsercionPublicacion(entrada) {
