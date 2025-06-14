@@ -278,3 +278,30 @@ BEGIN
     END
 END
 GO
+
+CREATE OR ALTER PROCEDURE sps_verificarUsuarioAdmin
+    @idUsuario INT,
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM Acceso WHERE idAcceso = @idUsuario AND tipoAcceso = 'Administrador')
+        BEGIN 
+            SET @resultado = 200;
+            SET @mensaje = 'El usuario es Administrador.';
+        END
+        ELSE 
+        BEGIN
+            SET @resultado = 403;
+            SET @mensaje = 'El usuario no es Administrador.';
+        END
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = 'Error al verificar el usuario: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
