@@ -225,6 +225,30 @@ describe('Pruebas del módulo de Publicaciones', () => {
         expect(response.body.error).toBe(false);
     }, 100000);
 
+    test('Debería verificar que no hay like de usuario', async () => {
+
+        const datosPublicacion2 = {
+            idCategoria: 1,
+            resuContenido: "Resumen de prueba para la publicación",
+            nivelEducativo: "Universidad",
+            idMateriaYRama: 1,
+            idDocumento: 3
+        };
+
+        const responsePubli = await request(app)
+        .post("/edushare/publicacion")
+        .set('Authorization', `Bearer ${tokenUsuario}`)
+        .send(datosPublicacion2);
+
+        const idPublicacion2 = responsePubli.body.id;
+
+        const response = await request(app)
+            .get(`/edushare/publicacion/${idPublicacion2}/like`)
+            .set('Authorization', `Bearer ${tokenUsuario}`);
+        
+        expect(response.statusCode).toBe(204);
+    }, 100000);
+
     test('Debería quitar like a una publicación', async () => {
         const response = await request(app)
             .delete(`/edushare/publicacion/${idPublicacion}/like`)
