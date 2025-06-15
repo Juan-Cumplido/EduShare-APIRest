@@ -40,8 +40,6 @@ beforeAll(async () => {
         "idInstitucion": 1
     };
 
-    await request(servidor).post("/edushare/acceso/registro").send(datosCuenta);
-
     const datosAdmin = {
         "correo": correoAdministrador,
         "contrasenia": contraseñaAdmin,
@@ -51,8 +49,6 @@ beforeAll(async () => {
         "segundoApellido": "Admin",
         "idInstitucion": 1,
     };
-
-    await request(servidor).post("/edushare/acceso/registroAdmin").send(datosAdmin);
 
     const datosUsuarioNormal = {
         "correo": correoUsuarioNormal,
@@ -64,8 +60,6 @@ beforeAll(async () => {
         "idInstitucion": 1
     };
 
-    await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioNormal);
-
     const datosUsuarioBanear = {
         "correo": correoUsuarioABanear,
         "contrasenia": contraseñaUsuarioBanear,
@@ -76,25 +70,22 @@ beforeAll(async () => {
         "idInstitucion": 1
     };
 
+    await request(servidor).post("/edushare/acceso/registro").send(datosCuenta);
+    await request(servidor).post("/edushare/acceso/registroAdmin").send(datosAdmin);
+    await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioNormal);
     await request(servidor).post("/edushare/acceso/registro").send(datosUsuarioBanear);
 
-    const loginAdmin = await request(servidor)
-        .post("/edushare/acceso/login")
-        .send({
+    const loginAdmin = await request(servidor).post("/edushare/acceso/login").send({
             identifier: correoAdministrador,
             contrasenia: contraseñaAdmin
     });
 
-    const loginUsuarioNormal = await request(servidor)
-        .post("/edushare/acceso/login")
-        .send({
+    const loginUsuarioNormal = await request(servidor).post("/edushare/acceso/login").send({
         identifier: correoUsuarioNormal,
         contrasenia: contraseñaUsuarioNormal
     });
 
-    const loginUsuarioBanear = await request(servidor)
-        .post("/edushare/acceso/login")
-        .send({
+    const loginUsuarioBanear = await request(servidor).post("/edushare/acceso/login").send({
         identifier: correoUsuarioABanear,
         contrasenia: contraseñaUsuarioBanear
     });

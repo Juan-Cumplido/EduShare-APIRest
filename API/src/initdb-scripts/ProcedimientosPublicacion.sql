@@ -184,6 +184,45 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sps_ObtenerPublicacionesPendientes
+    @resultado INT OUTPUT,
+    @mensaje NVARCHAR(200) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        SELECT 
+            p.idPublicacion,
+            p.idCategoria,
+            p.fecha,
+            p.resuContenido,
+            p.estado,
+            p.numeroLiker,
+            p.nivelEducativo,
+            p.numeroVisualizaciones,
+            p.numeroDescargas,
+            p.idUsuarioRegistrado,
+            p.idMateriaYRama,
+            p.idDocumento,
+            d.titulo,
+            d.ruta,
+            ur.nombre + ' ' + ur.primerApellido + ' ' + ur.segundoApellido AS nombreCompleto
+        FROM Publicacion p
+        INNER JOIN UsuarioRegistrado ur ON p.idUsuarioRegistrado = ur.idUsuarioRegistrado
+        INNER JOIN Documento d ON p.idDocumento = d.idDocumento
+        WHERE p.estado = 'EnRevision'
+        ORDER BY p.fecha DESC;
+
+        SET @resultado = 200;
+        SET @mensaje = 'Publicaciones obtenidas exitosamente';
+    END TRY
+    BEGIN CATCH
+        SET @resultado = 500;
+        SET @mensaje = ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
 CREATE OR ALTER PROCEDURE sps_ObtenerPublicacionPorId
     @idPublicacion INT,
     @resultado INT OUTPUT,
@@ -776,7 +815,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE sp_EliminarPublicacion
+CREATE OR ALTER PROCEDURE sp_EliminarPublicacion
     @idPublicacion INT,
     @resultado INT OUTPUT,
     @mensaje NVARCHAR(200) OUTPUT
@@ -787,7 +826,7 @@ BEGIN
     BEGIN TRY
         IF NOT EXISTS (SELECT 1 FROM Publicacion WHERE idPublicacion = @idPublicacion)
         BEGIN
-            SET @resultado = 0;
+            SET @resultado = 404;
             SET @mensaje = 'La publicación no existe';
             RETURN;
         END
@@ -808,7 +847,7 @@ BEGIN
         
         COMMIT TRANSACTION;
         
-        SET @resultado = 1;
+        SET @resultado = 200;
         SET @mensaje = 'Publicación eliminada exitosamente';
         
     END TRY
@@ -816,7 +855,7 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
             
-        SET @resultado = 0;
+        SET @resultado = 400;
         SET @mensaje = 'Error al eliminar la publicación: ' + ERROR_MESSAGE();
     END CATCH
 END

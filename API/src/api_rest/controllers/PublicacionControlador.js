@@ -70,11 +70,7 @@ export class PublicacionControlador {
                 
                 if (resultadoInsercion === 500) {
                     logger({ mensaje: ResultadoInsercion.mensaje });
-                    res.status(resultadoInsercion).json({
-                        error: true,
-                        estado: ResultadoInsercion.resultado,
-                        mensaje: 'Ha ocurrido un error en la base de datos al querer insertar la publicación'
-                    });
+                    responderConError(res, 500, "Ha ocurrido un error en la base de datos al querer insertar la publicación");
                 } else {
                     res.status(resultadoInsercion).json({
                         error: resultadoInsercion !== 201,
@@ -84,7 +80,6 @@ export class PublicacionControlador {
                     });
                 }
             } else {
-
                 res.status(400).json({
                     error: true,
                     estado: 400,
@@ -93,11 +88,7 @@ export class PublicacionControlador {
             }
         } catch (error) {
             logger({ mensaje: error });
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al querer crear la publicación."
-            });
+            responderConError(res, 500, "Ha ocurrido un error al querer crear la publicación.");
         }
     }
 
@@ -111,6 +102,16 @@ export class PublicacionControlador {
         }
     }
 
+    ObtenerPublicacionesPendientes = async (req, res) => {
+        try {
+            const resultadoRecuperacion = await this.modeloPublicacion.ObtenerPublicacionesPendientes();
+            manejarResultado(res, resultadoRecuperacion)
+        } catch (error){
+            logger({ mensaje: `Error en ObtenerPublicacionesPendientes: ${error}` });
+            responderConError(res, 500, "Ha ocurrido un error al obtener las publicaciones");
+        }
+    }
+    
     ObtenerPublicacionPorId = async (req, res) => {
         try {
             const { idPublicacion } = req.params;

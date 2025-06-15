@@ -13,7 +13,8 @@ export const CrearRutaPublicacion = ({ ModeloPublicacion }) => {
     router.post('/documento', ValidarJwt, ControladorPublicacion.CrearDocumento)
     
     router.get('/', ControladorPublicacion.ObtenerPublicaciones);
-    router.get('/me', ValidarJwt, ControladorPublicacion.ObtenerPublicacionesPropias)
+    router.get('/pendientes', ValidarJwt, ValidarAdmin, ControladorPublicacion.ObtenerPublicacionesPendientes);
+    router.get('/me', ValidarJwt, ControladorPublicacion.ObtenerPublicacionesPropias);
     router.get('/:idPublicacion', ControladorPublicacion.ObtenerPublicacionPorId);
 
     router.get('/categoria/:categoriaId', ControladorPublicacion.ObtenerPorCategoria);
