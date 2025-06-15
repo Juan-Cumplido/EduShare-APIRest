@@ -18,17 +18,35 @@ export class PublicacionControlador {
             const ResultadoValidacion = ValidarInsercionDocumento(datosDocumento);
 
             if (!ResultadoValidacion.success) {
-                return responderConError(res, 400, ResultadoValidacion.error.formErrors);
+                return res.status(400).json({
+                    error: true,
+                    estado: 400,
+                    mensaje: ResultadoValidacion.error.formErrors
+                });
             }
 
             const ResultadoInsercion = await this.modeloPublicacion.InsertarDocumento(ResultadoValidacion.data);
-            manejarResultado(res, ResultadoInsercion);
+
+            console.log("ResultadoInsercion:", ResultadoInsercion);
+
+            return res.status(ResultadoInsercion.resultado).json({
+                error: false,
+                estado: ResultadoInsercion.resultado,
+                mensaje: ResultadoInsercion.mensaje,
+                id: ResultadoInsercion.id // o lo que sea que estés retornando
+            });
 
         } catch (error) {
-            logger({ mensaje: `Error en CrearDocumento: ${error}` });
-            responderConError(res, 500, "Ha ocurrido un error al crear el documento");
+            console.error("Error en CrearDocumento:", error);
+            return res.status(500).json({
+                error: true,
+                estado: 500,
+                mensaje: "Ha ocurrido un error al crear el documento"
+            });
         }
     }
+
+
 
     CrearPublicacion = async (req, res) => {
         try {
