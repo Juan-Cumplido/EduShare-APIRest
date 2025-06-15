@@ -9,7 +9,6 @@ export const CrearRutaPerfil = ({ ModeloPerfil }) => {
     router.get('/me', ValidarJwt, ControladorPerfil.ObtenerPerfilPropio);
     router.put('/me', ValidarJwt, ControladorPerfil.ActualizarPerfil);
     router.put('/me/avatar', ValidarJwt, ControladorPerfil.ActualizarAvatar);
-
     router.get('/', ControladorPerfil.ObtenerPerfiles);
     router.get('/:idUsuario', ControladorPerfil.ObtenerPerfilPorId);
     

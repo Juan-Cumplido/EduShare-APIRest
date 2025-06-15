@@ -6,8 +6,8 @@ export const CrearRutaNotificacion = ({ ModeloNotificacion }) => {
     const router = express.Router();
     const ControladorNotificacion = new NotificacionControlador({ModeloNotificacion});
 
-    //router.post('/', ValidarJwt, ControladorNotificacion.RegistrarNotificacion);
-    //router.get('/', ControladorNotificacion.ObtenerNotificacionesPropias)
+    router.post('/', ValidarJwt, ControladorNotificacion.RegistrarNotificacion);
+    router.get('/', ValidarJwt, ControladorNotificacion.ObtenerNotificacionesPropias)
 
     return router;
 }

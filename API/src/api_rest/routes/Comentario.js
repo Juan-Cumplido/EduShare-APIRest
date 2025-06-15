@@ -7,13 +7,9 @@ export const CrearRutaComentario = ({ ModeloComentario }) => {
     const router = express.Router();
     const ControladorComentario = new ComentarioControlador({ModeloComentario});
     
-
     router.post('/', ValidarJwt, ControladorComentario.CrearComentario);
-    
     router.delete('/:idComentario', ValidarJwt, ValidarAdminOPropietario(ModeloComentario, 'idComentario'),
-        ControladorComentario.EliminarComentario
-    );
-
+        ControladorComentario.EliminarComentario);
     router.get('/publicacion/:idPublicacion', ControladorComentario.RecuperarComentarios);
     
     return router;

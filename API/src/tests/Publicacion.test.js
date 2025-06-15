@@ -340,10 +340,6 @@ describe('Pruebas del módulo de Publicaciones', () => {
             .set("Authorization", `Bearer ${tokenUsuario}`)
             .set("content-type", "application/json");
 
-        console.log("Usuario normal no puede acceder")
-        console.log(res.statusCode)
-        console.log(res.body)
-
         expect(res.statusCode).toBe(403); 
         expect(res.body.error).toBe(true);
     }, 100000);
