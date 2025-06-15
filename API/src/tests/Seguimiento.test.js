@@ -128,7 +128,7 @@ describe('Pruebas de seguimiento de usuarios', () => {
         const response = await request(app)
             .get(`/edushare/seguimiento/verificar/${idUsuarioB}`)
             .set('Authorization', `Bearer ${tokenUsuarioA}`);
-        
+
         expect(response.statusCode).toBe(200)
         expect(response.body.siguiendo).toBe(true);
     }, 100000);
