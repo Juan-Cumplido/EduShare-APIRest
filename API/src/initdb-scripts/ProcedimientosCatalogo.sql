@@ -120,7 +120,7 @@ BEGIN
                 m.idMateria,
                 m.nombreMateria,
                 r.idRama,
-                r.nombreRama
+                r.nombreRama,
                 mr.idMateriaYRama
             FROM Materia m
             INNER JOIN MateriaYRama mr ON m.idMateria = mr.idMateria

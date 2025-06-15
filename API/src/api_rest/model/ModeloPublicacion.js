@@ -15,6 +15,7 @@ export class ModeloPublicacion {
             const { titulo, ruta, idUsuarioRegistrado } = datos;
 
             const Solicitud = conexion.request();
+            
             const ResultadoSolicitud = await Solicitud
                 .input('titulo', sql.NVarChar(100), titulo)
                 .input('ruta', sql.NVarChar(sql.MAX), ruta)
