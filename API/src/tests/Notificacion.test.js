@@ -202,7 +202,6 @@ describe('Pruebas del módulo de notificaciones', () => {
     }, 100000);
 
     test('Debería obtener notificaciones propias exitosamente', async () => {
-        // Primero crear una notificación para el usuario
         const datosNotificacion = {
             usuarioDestinoId: idUsuario,
             titulo: "Notificación para obtener",
@@ -215,7 +214,6 @@ describe('Pruebas del módulo de notificaciones', () => {
             .set('Authorization', `Bearer ${tokenUsuario2}`)
             .send(datosNotificacion);
 
-        // Luego obtener las notificaciones
         const response = await request(app)
             .get("/edushare/notificacion")
             .set('Authorization', `Bearer ${tokenUsuario}`);
