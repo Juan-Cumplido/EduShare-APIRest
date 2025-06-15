@@ -35,7 +35,7 @@ describe('GET /catalogo/categorias - Recuperar Categorías', () => {
     }, 100000);
 });
 
- describe('GET /catalogo/ramas - Recuperar Ramas', () => {
+describe('GET /catalogo/ramas - Recuperar Ramas', () => {
     test('Debe recuperar ramas exitosamente', async () => {
         const res = await request(app)
             .get("/edushare/catalogo/ramas")

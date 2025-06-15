@@ -1,4 +1,5 @@
 import { ValidarInsercionAcceso, ValidarCredenciales, ValidarCambioContraseña, ValidarCorreo, ValidarEliminacionCuenta, ValidarBaneo} from "../schemas/Acceso.js";
+import { responderConError } from "../utilidades/Respuestas.js";
 import { logger } from "../utilidades/Logger.js";
 import path from 'path';
 import {EnviarCorreoDeVerificacion} from "../utilidades/Correo.js";
@@ -351,11 +352,7 @@ export class AccesoControlador
             });
         } catch (error){
             logger({ mensaje: `Error al intentar banear al usuario: ${error}` });
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al intentar banear al usuario"
-            });
+            responderConError(res, 500, "Ha ocurrido un error al intentar banear al usuario");            
         }
     }
 
@@ -371,11 +368,7 @@ export class AccesoControlador
                 let resultadoInsercion = parseInt(ResultadoInsercion.resultado);
                 if (resultadoInsercion === 500) {
                     logger({ mensaje: ResultadoInsercion.mensaje });
-                    res.status(resultadoInsercion).json({
-                        error: true,
-                        estado: ResultadoInsercion.resultado,
-                        mensaje: 'Ha ocurrido un error en la base de datos al querer insertar los datos una nueva cuenta de acceso'
-                    });
+                    responderConError(res, 500, "Ha ocurrido un error en la base de datos al querer insertar los datos una nueva cuenta de acceso");            
                 } else {
                     res.status(resultadoInsercion).json({
                         error: resultadoInsercion !== 200,
@@ -392,11 +385,7 @@ export class AccesoControlador
             }
         } catch (error) {
             logger({ mensaje: error });
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al querer registrar el Acceso."
-            });
+            responderConError(res, 500, "Ha ocurrido un error al querer registrar el Acceso.");            
         }
     }
 }
