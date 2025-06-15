@@ -29,11 +29,7 @@ export class CatalogoControlador{
             }
         } catch (error) {
             logger({ mensaje: `Error en RecuperarCategorías: ${error}` });
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al recuperar las categorías"
-            });
+            responderConError(res, 500, "Ha ocurrido un error al recuperar las categorías");
         }
     }
 
@@ -59,11 +55,7 @@ export class CatalogoControlador{
             }
         } catch (error){
             logger({mensaje: `Error en RecuperarRamas ${error}`})
-            res.status(500).json({
-                error: true,
-                estado: 500,
-                mensaje: "Ha ocurrido un error al recuperar las ramas"
-            })
+            responderConError(res, 500, "Ha ocurrido un error al recuperar las ramas");
         }
     }
 
@@ -101,10 +93,7 @@ export class CatalogoControlador{
             
         } catch (error) {
             logger({ mensaje: `Error en RecuperacionMaterias ${error}` })
-            return res.status(500).json({
-                resultado: 500,
-                mensaje: 'Error interno del servidor'
-            });
+            responderConError(res, 500, "Error interno del servidor");
         }
     }
 

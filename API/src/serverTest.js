@@ -7,11 +7,12 @@ import { CrearRutaSeguimiento } from './api_rest/routes/Seguimiento.js';
 import { CrearRutaPublicacion } from './api_rest/routes/Publicaciones.js';
 import { CrearRutaPerfil } from './api_rest/routes/Perfil.js';
 import { CrearRutaComentario } from './api_rest/routes/Comentario.js';
+import { CrearRutaNotificacion } from './api_rest/routes/Notificacion.js';
 import { ValidarJwt } from './api_rest/middlewares/jwt.js';
 import { ValidarAdmin } from './api_rest/middlewares/ValidarAdmin.js';
 import { ValidarAdminOPropietario } from './api_rest/middlewares/ValidarAdminOPropietario.js';
 
-export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimiento, ModeloPublicacion, ModeloPerfil, ModeloComentario}) => {
+export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimiento, ModeloPublicacion, ModeloPerfil, ModeloComentario, ModeloNotificacion}) => {
     const app = express();
     dotenv.config();
     app.use(json());
@@ -19,10 +20,11 @@ export const CrearServidorTest = ({ModeloAcceso, ModeloCatalogo, ModeloSeguimien
     app.disable('x-powered-by');
 
     app.use('/edushare/acceso', CrearRutaAcceso({ModeloAcceso}));
-    app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}))
-    app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}))
+    app.use('/edushare/catalogo', CrearRutaCatalogo({ModeloCatalogo}));
+    app.use('/edushare/seguimiento', CrearRutaSeguimiento({ModeloSeguimiento}));
     app.use('/edushare/publicacion', CrearRutaPublicacion({ModeloPublicacion}));
-    app.use('/edushare/perfil', CrearRutaPerfil({ModeloPerfil}))
+    app.use('/edushare/perfil', CrearRutaPerfil({ModeloPerfil}));
+    app.use('/edushare/notificacion', CrearRutaNotificacion ({ModeloNotificacion}));
     app.use('/edushare/comentario', CrearRutaComentario ({ModeloComentario}))
 
     app.get('/test/admin', ValidarJwt, ValidarAdmin, (req, res) => {

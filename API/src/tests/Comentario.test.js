@@ -50,11 +50,9 @@ beforeAll(async () => {
     servidor = servidorCreado;
     app = appCreada;
     
-    // Registrar usuarios
     await request(servidor).post("/edushare/acceso/registro").send(usuarioPrueba1);
     await request(servidor).post("/edushare/acceso/registro").send(usuarioPrueba2);
 
-    // Login de usuarios
     const loginResponse1 = await request(app)
         .post("/edushare/acceso/login")
         .send({ 
@@ -88,7 +86,6 @@ beforeAll(async () => {
 }, 100000);
 
 afterAll(async () => {
-    // Limpiar datos de prueba
     const cuentas = [
         { correo: usuarioPrueba1.correo, contrasenia: usuarioPrueba1.contrasenia },
         { correo: usuarioPrueba2.correo, contrasenia: usuarioPrueba2.contrasenia }
@@ -331,7 +328,6 @@ describe('Pruebas del módulo de comentarios', () => {
             { contenido: "Tercer comentario", idPublicacion: idPublicacion }
         ];
 
-        // Crear comentarios
         for (const comentario of comentarios) {
             await request(app)
                 .post("/edushare/comentario")
@@ -339,7 +335,6 @@ describe('Pruebas del módulo de comentarios', () => {
                 .send(comentario);
         }
 
-        // Recuperar comentarios
         const response = await request(app)
             .get(`/edushare/comentario/publicacion/${idPublicacion}`);
         
@@ -348,7 +343,6 @@ describe('Pruebas del módulo de comentarios', () => {
         expect(Array.isArray(response.body.datos)).toBe(true);
         expect(response.body.datos.length).toBeGreaterThanOrEqual(3);
         
-        // Verificar que los comentarios incluyen información del usuario
         if (response.body.datos.length > 0) {
             expect(response.body.datos[0]).toEqual(
                 expect.objectContaining({
