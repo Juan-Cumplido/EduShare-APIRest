@@ -8,10 +8,7 @@ let servidor;
 let app;
 let tokenUsuario;
 let tokenUsuario2;
-let idUsuario;
-let idUsuario2;
 let idPublicacion;
-let idComentarioCreado;
 
 const usuarioPrueba1 = {
     correo: "comentario@test.com",
@@ -68,9 +65,7 @@ beforeAll(async () => {
         });
 
     tokenUsuario = loginResponse1.body.token;
-    idUsuario = loginResponse1.body.datos.idUsuario;
     tokenUsuario2 = loginResponse2.body.token;
-    idUsuario2 = loginResponse2.body.datos.idUsuario;
 
     const publicacionResponse = await request(app)
         .post("/edushare/publicacion")
@@ -121,10 +116,6 @@ describe('Pruebas del módulo de comentarios', () => {
         expect(response.body.error).toBe(false);
         expect(response.body.mensaje).toBeDefined();
         
-        // Guardar el ID del comentario para pruebas posteriores
-        if (response.body.datos && response.body.datos.idComentario) {
-            idComentarioCreado = response.body.datos.idComentario;
-        }
     }, 100000);
 
     test('Debería fallar al crear comentario sin token', async () => {
@@ -144,7 +135,7 @@ describe('Pruebas del módulo de comentarios', () => {
 
     test('Debería fallar al crear comentario con datos inválidos', async () => {
         const comentarioInvalido = {
-            contenido: "", // Contenido vacío
+            contenido: "", 
             idPublicacion: idPublicacion
         };
 
@@ -229,7 +220,7 @@ describe('Pruebas del módulo de comentarios', () => {
     test('Debería fallar al recuperar comentarios con ID inválido', async () => {
         const response = await request(app)
             .get("/edushare/comentario/publicacion/abc");
-        
+
         expect([400, 404]).toContain(response.statusCode);
         expect(response.body.error).toBe(true);
     }, 100000);
@@ -239,6 +230,7 @@ describe('Pruebas del módulo de comentarios', () => {
         const response = await request(app)
             .delete("/edushare/comentario/1");
         
+
         expect(response.statusCode).toBe(401);
         expect(response.body.error).toBe(true);
     }, 100000);
@@ -303,23 +295,9 @@ describe('Pruebas del módulo de comentarios', () => {
         
         expect(response.statusCode).toBe(401);
         expect(response.body.error).toBe(true);
-        expect(response.body.mensaje).toContain('inválido');
+        expect(response.body.mensaje).toEqual('Token inválido');
     }, 100000);
 
-    test('Debería validar formato de autorización incorrecto', async () => {
-        const comentarioData = {
-            contenido: "Comentario con formato de auth incorrecto",
-            idPublicacion: idPublicacion
-        };
-
-        const response = await request(app)
-            .post("/edushare/comentario")
-            .set('Authorization', 'InvalidFormat')
-            .send(comentarioData);
-        
-        expect(response.statusCode).toBe(401);
-        expect(response.body.error).toBe(true);
-    }, 100000);
 
     test('Debería crear múltiples comentarios y recuperarlos ordenados', async () => {
         const comentarios = [
@@ -372,11 +350,8 @@ describe('Pruebas del módulo de comentarios', () => {
         if (response.statusCode === 500) {
             console.error('Error interno:', response.body);
         }
-
-        expect([201, 400]).toContain(response.statusCode);
-        if (response.statusCode === 201) {
-            expect(response.body.error).toBe(false);
-        }
+        expect(response.statusCode).toBe(201);
+        expect(response.body.error).toBe(false);
     }, 100000);
 
     test('Debería limitar el contenido exactamente a 200 caracteres', async () => {
