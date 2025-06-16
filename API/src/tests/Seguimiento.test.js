@@ -131,6 +131,7 @@ describe('Pruebas de seguimiento de usuarios', () => {
 
         expect(response.statusCode).toBe(200)
         expect(response.body.siguiendo).toBe(true);
+        expect(response.body.mensaje).toEqual("El usuario está siendo seguido.")
     }, 100000);
 
     test('Debería obtener los usuarios seguidos', async () => {
@@ -140,6 +141,7 @@ describe('Pruebas de seguimiento de usuarios', () => {
         
         expect(response.statusCode).toBe(200)
         expect(response.body.datos).toBeInstanceOf(Array);
+        expect(response.body.mensaje).toEqual("Usuarios seguidos obtenidos exitosamente.")
 
     }, 100000);
 
@@ -155,6 +157,6 @@ describe('Pruebas de seguimiento de usuarios', () => {
             .send({ idUsuarioSeguido: idUsuarioB });
         
         expect(response.statusCode).toBe(200)
-        expect(response.body.mensaje).toContain('Has dejado de seguir a este usuario');
+        expect(response.body.mensaje).toEqual('Has dejado de seguir a este usuario.');
     }, 100000);
 });

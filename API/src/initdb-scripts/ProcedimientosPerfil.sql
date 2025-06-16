@@ -91,7 +91,6 @@ BEGIN
             idInstitucion = @idInstitucion
         WHERE idUsuarioRegistrado = @idUsuario;
 
-        -- Actualizar nombre de usuario en la tabla Acceso
         UPDATE Acceso 
         SET 
             nombreUsuario = @nombreUsuario,
