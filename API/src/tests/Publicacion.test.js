@@ -95,6 +95,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(201);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Publicación creada exitosamente");
         expect(response.body.id).toBeDefined();
         
         idPublicacion = response.body.id;
@@ -103,14 +104,13 @@ describe('Pruebas del módulo de Publicaciones', () => {
     test('Debería fallar al crear publicación sin datos requeridos', async () => {
         const datosIncompletos = {
             idCategoria: 1,
-            // Falta resuContenido y otros campos requeridos
         };
 
         const response = await request(app)
             .post("/edushare/publicacion")
             .set('Authorization', `Bearer ${tokenUsuario}`)
             .send(datosIncompletos);
-        
+
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
     }, 100000);
@@ -121,6 +121,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Publicaciones obtenidas exitosamente");
         expect(response.body.datos).toBeInstanceOf(Array);
     }, 100000);
 
@@ -130,6 +131,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Publicación obtenida exitosamente");
         expect(response.body.datos).toBeDefined();
     }, 100000);
 
@@ -139,6 +141,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
             .get(`/edushare/publicacion/${idInexistente}`);
         
         expect(response.statusCode).toBe(404);
+        expect(response.body.mensaje).toEqual("La publicación no existe");
         expect(response.body.error).toBe(true);
     }, 100000);
 
@@ -193,7 +196,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         const nivelInvalido = "Primaria";
         const response = await request(app)
             .get(`/edushare/publicacion/nivel/${nivelInvalido}`);
-        
+
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
     }, 100000);
@@ -214,6 +217,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(201);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Like agregado exitosamente");
     }, 100000);
 
     test('Debería verificar like de usuario', async () => {
@@ -223,6 +227,31 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("El usuario ya dio like a esta publicación");
+    }, 100000);
+
+    test('Debería verificar que no hay like de usuario', async () => {
+
+        const datosPublicacion2 = {
+            idCategoria: 1,
+            resuContenido: "Resumen de prueba para la publicación",
+            nivelEducativo: "Universidad",
+            idMateriaYRama: 1,
+            idDocumento: 3
+        };
+
+        const responsePubli = await request(app)
+        .post("/edushare/publicacion")
+        .set('Authorization', `Bearer ${tokenUsuario}`)
+        .send(datosPublicacion2);
+
+        const idPublicacion2 = responsePubli.body.id;
+
+        const response = await request(app)
+            .get(`/edushare/publicacion/${idPublicacion2}/like`)
+            .set('Authorization', `Bearer ${tokenUsuario}`);
+        
+        expect(response.statusCode).toBe(204);
     }, 100000);
 
     test('Debería quitar like a una publicación', async () => {
@@ -232,6 +261,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Like eliminado exitosamente")
     }, 100000);
 
     test('Debería registrar visualización', async () => {
@@ -300,6 +330,7 @@ describe('Pruebas del módulo de Publicaciones', () => {
         
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
+        expect(response.body.mensaje).toEqual("Solo se pueden rechazar publicaciones en revisión")
     }, 100000);
 
     test('GET /pendientes - Administrador obtiene publicaciones pendientes exitosamente', async () => {

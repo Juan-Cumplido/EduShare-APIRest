@@ -21,6 +21,8 @@ const correoUsuarioNormal = "usuario_normal@test.com";
 const contraseñaUsuarioNormal = "UserPassword123!";
 const correoUsuarioABanear = "usuario_banear@test.com";
 const contraseñaUsuarioBanear = "BanearPassword123!";
+const correoAcceso = "usuario@test.com"
+const contraseñaAcceso = "Password123"
 
 beforeAll(async () => {
     const { app: appCreada, server: servidorCreado } = CrearServidorTest({
@@ -99,21 +101,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
 
-    const cuenta1 = {
-        "correo": correoRecuperacionPrueba,
-        "contrasenia": contraseñaCorreoPrueba
-    }
-
-    const cuenta2 = {
-        "correo": "usuario@test.com",
-        "contrasenia": "Password123"
-    }
-    await request(servidor).post("/edushare/acceso/eliminar").send(cuenta1);
-    await request(servidor).post("/edushare/acceso/eliminar").send(cuenta2);
-
     const cuentas = [
         { correo: correoRecuperacionPrueba, contrasenia: contraseñaCorreoPrueba},
-        {correo: "usuario@test.com", contrasenia: "Password123"},
+        { correo: correoAcceso, contrasenia: contraseñaAcceso},
         { correo: correoAdministrador, contrasenia: contraseñaAdmin },
         { correo: correoUsuarioNormal, contrasenia: contraseñaUsuarioNormal },
         { correo: correoUsuarioABanear, contrasenia: contraseñaUsuarioBanear }
@@ -131,8 +121,8 @@ afterAll(async () => {
 describe('Test de cuenta de acceso', () => {
     test('POST /acceso - Se crea una nueva cuenta de acceso', async () => {
         const datos = {
-        correo: "usuario@test.com",
-        contrasenia: "Password123",
+        correo: correoAcceso,
+        contrasenia: contraseñaAcceso,
         nombreUsuario: "testuser",
         nombre: "Usuario",
         primerApellido: "Test",
@@ -248,12 +238,18 @@ describe('Test de cuenta de acceso', () => {
             .send(datosCambio);
         
         expect(res.statusCode).toBe(400);
-        expect(res.body.error).toBe(true);
-        expect(res.body.estado).toBe(400);
-        expect(res.body.mensaje).toBeDefined();
+        expect(res.body).toEqual({
+            error: true,
+            estado: 400,
+            mensaje: {
+                correo: [
+                    "Formato de correo electrónico inválido"
+                ]
+            }
+        });
     }, 100000);
 
-    test('DEBUG - Verify admin account is created correctly', async () => {
+    test('DEBUG - Verificar cuenta de admin creada correctamente', async () => {
         const loginAdmin = await request(app)
             .post("/edushare/acceso/login")
             .send({

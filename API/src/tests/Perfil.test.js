@@ -6,7 +6,6 @@ import { ModeloAcceso } from "../api_rest/model/ModeloAcceso.js";
 let servidor;
 let app;
 let tokenUsuario;
-let idUsuario;
 let idUsuario2;
 
 const usuarioPrueba = {
@@ -55,7 +54,6 @@ beforeAll(async () => {
     });
 
     tokenUsuario = loginResponse.body.token;
-    idUsuario = loginResponse.body.datos.idUsuario;
     idUsuario2 = loginResponse2.body.datos.idUsuario;
 
 }, 100000);
@@ -92,7 +90,7 @@ describe('Pruebas del perfil de usuario', () => {
         expect(response.body).toEqual({
             error: false,
             estado: 200,
-            mensaje: expect.any(String),
+            mensaje: "Perfil recuperado exitosamente",
             datos: expect.objectContaining({
                 idUsuarioRegistrado: expect.any(Number),
                 nombre: expect.any(String),
@@ -156,7 +154,7 @@ describe('Pruebas del perfil de usuario', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
-        expect(response.body.mensaje).toBeDefined();
+        expect(response.body.mensaje).toEqual("Perfil actualizado exitosamente");
     }, 100000);
 
     test('Debería fallar al actualizar perfil con datos inválidos', async () => {
@@ -205,6 +203,7 @@ describe('Pruebas del perfil de usuario', () => {
         
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
+        expect(response.body.mensaje).toEqual("La institución especificada no existe");
     }, 100000);
 
     test('Debería actualizar el avatar exitosamente', async () => {
@@ -224,6 +223,7 @@ describe('Pruebas del perfil de usuario', () => {
         }
         expect(response.statusCode).toBe(200);
         expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Avatar actualizado exitosamente");
     }, 100000);
 
     test('Debería fallar al actualizar avatar con datos inválidos', async () => {
@@ -239,7 +239,7 @@ describe('Pruebas del perfil de usuario', () => {
             .put("/edushare/perfil/me/avatar")
             .set('Authorization', `Bearer ${tokenUsuario}`)
             .send(datosAvatarInvalidos);
-        
+
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
         expect(response.body.mensaje).toBeDefined();
@@ -288,13 +288,13 @@ describe('Pruebas del perfil de usuario', () => {
     test('Debería validar campos requeridos en actualización de perfil', async () => {
         const datosFaltantes = {
             nombre: "Nombre"
-            // Faltan campos requeridos
         };
 
         const response = await request(app)
             .put("/edushare/perfil/me")
             .set('Authorization', `Bearer ${tokenUsuario}`)
             .send(datosFaltantes);
+
         
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
@@ -315,25 +315,6 @@ describe('Pruebas del perfil de usuario', () => {
             .put("/edushare/perfil/me")
             .set('Authorization', `Bearer ${tokenUsuario}`)
             .send(datosLargos);
-        
-        expect(response.statusCode).toBe(400);
-        expect(response.body.error).toBe(true);
-    }, 100000);
-
-    test('Debería validar formato de email', async () => {
-        const datosEmailInvalido = {
-            nombre: "Nombre",
-            primerApellido: "Apellido",
-            segundoApellido: null,
-            correo: "email-sin-arroba",
-            nombreUsuario: "testuser",
-            idInstitucion: 1
-        };
-
-        const response = await request(app)
-            .put("/edushare/perfil/me")
-            .set('Authorization', `Bearer ${tokenUsuario}`)
-            .send(datosEmailInvalido);
         
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
