@@ -513,7 +513,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE spi_DarLikePublicacion
+CREATE OR ALTER PROCEDURE spi_DarLikePublicacion
     @idPublicacion INT,
     @idUsuario INT,
     @resultado INT OUTPUT,
@@ -562,7 +562,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE spd_QuitarLikePublicacion
+CREATE OR ALTER PROCEDURE spd_QuitarLikePublicacion
     @idPublicacion INT,
     @idUsuario INT,
     @resultado INT OUTPUT,
