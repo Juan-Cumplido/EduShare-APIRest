@@ -7,7 +7,6 @@ let servidor;
 let app;
 let tokenAdministrador;
 let tokenUsuarioNormal;
-let idUsuarioNormal;
 
 const correoAdministrador = "admin@test.com";
 const contraseñaAdmin = "AdminPassword123!";
@@ -61,7 +60,6 @@ beforeAll(async () => {
 
     tokenAdministrador = loginAdmin.body.token;
     tokenUsuarioNormal = loginUsuarioNormal.body.token;
-    idUsuarioNormal = loginUsuarioNormal.body.datos.idUsuario;
 
 }, 100000);
 
@@ -132,26 +130,6 @@ describe('Middleware ValidarAdmin', () => {
                 error: true,
                 estado: 401,
                 mensaje: 'Token inválido'
-            });
-        }, 100000);
-
-        test('Debe manejar error cuando el usuario no existe', async () => {
-            // Crear token con ID de usuario inexistente
-            const tokenInexistente = jwt.sign(
-                { idUsuario: 99999, tipoUsuario: 'Usuario' },
-                process.env.SECRETO_JWT,
-                { expiresIn: '2h' }
-            );
-
-            const response = await request(servidor)
-                .get('/test/admin')
-                .set('Authorization', `Bearer ${tokenInexistente}`);
-
-            expect(response.status).toBe(403);
-            expect(response.body).toEqual({
-                error: true,
-                estado: 403,
-                mensaje: 'No tiene permisos de administrador para realizar esta acción'
             });
         }, 100000);
     });

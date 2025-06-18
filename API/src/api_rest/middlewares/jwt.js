@@ -20,7 +20,7 @@ export const ValidarJwt = (request, response, next) =>
                 error: true,
                 estado: 401,
                 mensaje: 'No hay un token dentro de la solicitud'
-            })
+            });
         }
     } catch(error) {
         logger(error);
@@ -28,6 +28,6 @@ export const ValidarJwt = (request, response, next) =>
             error: true,
             estado: 401,
             mensaje: 'Token inválido'
-        })
+        });
     }   
 }

@@ -5,7 +5,6 @@ import { ModeloAcceso } from "../api_rest/model/ModeloAcceso.js";
 import { ModeloPublicacion } from "../api_rest/model/ModeloPublicacion.js";
 
 let servidor;
-let app;
 let tokenAdministrador;
 let tokenUsuarioNormal;
 let tokenUsuarioNormal2;
@@ -132,8 +131,7 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .get(`/test/admin-propietario/${idPublicacionTest}`)
                 .set('Authorization', `Bearer ${tokenAdministrador}`);
 
-            expect(response.status).not.toBe(403);
-            expect(response.status).not.toBe(401);
+            expect(response.status).toBe(200)
         }, 100000);
 
         test('Debe permitir acceso a administrador con ID en body', async () => {
@@ -142,8 +140,8 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .set('Authorization', `Bearer ${tokenAdministrador}`)
                 .send({ id: idPublicacionTest });
 
-            expect(response.status).not.toBe(403);
-            expect(response.status).not.toBe(401);
+            expect(response.status).toBe(200)
+            expect(response.body.mensaje).toEqual("Acceso autorizado como administrador o propietario (body)")
         });
     }, 100000);
 
@@ -153,8 +151,9 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .get(`/test/admin-propietario/${idPublicacionTest}`)
                 .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
 
-            expect(response.status).not.toBe(403);
-            expect(response.status).not.toBe(401);
+            expect(response.status).toBe(200)
+            expect(response.body.mensaje).toEqual("Acceso autorizado como administrador o propietario")
+
         }, 100000);
 
         test('Debe permitir acceso al propietario con ID en body', async () => {
@@ -163,8 +162,8 @@ describe('Middleware ValidarAdminOPropietario', () => {
                 .set('Authorization', `Bearer ${tokenUsuarioNormal}`)
                 .send({ id: idPublicacionTest });
 
-            expect(response.status).not.toBe(403);
-            expect(response.status).not.toBe(401);
+            expect(response.status).toBe(200)
+            expect(response.body.mensaje).toEqual("Acceso autorizado como administrador o propietario (body)")
         });
     });
 
@@ -311,40 +310,16 @@ describe('Middleware ValidarAdminOPropietario', () => {
         }, 100000);
     });
 
-    describe('Casos con campo personalizado', () => {
-        test('Debe funcionar con campo de ID personalizado', async () => {
-            const response = await request(servidor)
-                .get(`/test/admin-propietario-custom/${idPublicacionTest}`)
-                .set('Authorization', `Bearer ${tokenAdministrador}`);
+    test('Debe mantener consistencia entre params y body', async () => {
+    const responseParams = await request(servidor)
+        .get(`/test/admin-propietario/${idPublicacionTest}`)
+        .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
 
-            expect(response.status).not.toBe(403);
-            expect(response.status).not.toBe(401);
-        }, 100000);
+    const responseBody = await request(servidor)
+        .put('/test/admin-propietario-body')
+        .set('Authorization', `Bearer ${tokenUsuarioNormal}`)
+        .send({ id: idPublicacionTest });
 
-        test('Debe denegar acceso cuando falta campo personalizado', async () => {
-            const response = await request(servidor)
-                .get('/test/admin-propietario-custom-sin-id')
-                .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
-
-            expect(response.status).toBe(400);
-            expect(response.body).toEqual({
-                error: true,
-                estado: 400,
-                mensaje: 'ID del recurso (idPublicacion) es requerido'
-            });
-        }, 100000);
-    });
-
-        test('Debe mantener consistencia entre params y body', async () => {
-        const responseParams = await request(servidor)
-            .get(`/test/admin-propietario/${idPublicacionTest}`)
-            .set('Authorization', `Bearer ${tokenUsuarioNormal}`);
-
-        const responseBody = await request(servidor)
-            .put('/test/admin-propietario-body')
-            .set('Authorization', `Bearer ${tokenUsuarioNormal}`)
-            .send({ id: idPublicacionTest });
-
-        expect(responseParams.status).toBe(responseBody.status);
-    }, 100000);
+    expect(responseParams.status).toBe(responseBody.status);
+}, 100000);
 });

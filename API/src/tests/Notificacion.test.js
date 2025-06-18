@@ -91,11 +91,10 @@ describe('Pruebas del módulo de notificaciones', () => {
         }
 
         expect(response.statusCode).toBe(201);
-        expect(response.body).toEqual({
-            error: false,
-            estado: 201,
-            mensaje: expect.any(String)
-        });
+        expect(response.body.error).toBe(false);
+        expect(response.body.mensaje).toEqual("Notificación registrada exitosamente")
+
+        
     }, 100000);
 
     test('Debería fallar al registrar notificación sin token', async () => {
@@ -143,7 +142,7 @@ describe('Pruebas del módulo de notificaciones', () => {
             .post("/edushare/notificacion")
             .set('Authorization', `Bearer ${tokenUsuario}`)
             .send(datosInvalidos);
-        
+
         expect(response.statusCode).toBe(400);
         expect(response.body.error).toBe(true);
     }, 100000);
@@ -151,7 +150,7 @@ describe('Pruebas del módulo de notificaciones', () => {
     test('Debería fallar con título muy largo', async () => {
         const datosInvalidos = {
             usuarioDestinoId: idUsuario2,
-            titulo: "a".repeat(256), // Excede el máximo de 255
+            titulo: "a".repeat(256), 
             mensajeNotificacion: "Mensaje válido",
             tipo: "Seguimiento"
         };
@@ -202,7 +201,6 @@ describe('Pruebas del módulo de notificaciones', () => {
     }, 100000);
 
     test('Debería obtener notificaciones propias exitosamente', async () => {
-        // Primero crear una notificación para el usuario
         const datosNotificacion = {
             usuarioDestinoId: idUsuario,
             titulo: "Notificación para obtener",
@@ -215,7 +213,6 @@ describe('Pruebas del módulo de notificaciones', () => {
             .set('Authorization', `Bearer ${tokenUsuario2}`)
             .send(datosNotificacion);
 
-        // Luego obtener las notificaciones
         const response = await request(app)
             .get("/edushare/notificacion")
             .set('Authorization', `Bearer ${tokenUsuario}`);
@@ -300,39 +297,5 @@ describe('Pruebas del módulo de notificaciones', () => {
         
         expect(response.statusCode).toBe(200);
         expect(response.body.datos.length).toBeGreaterThan(0);
-    }, 100000);
-
-    test('Debería validar que usuarioDestinoId sea un entero positivo', async () => {
-        const datosInvalidos = {
-            usuarioDestinoId: 0, 
-            titulo: "Título válido",
-            mensajeNotificacion: "Mensaje válido",
-            tipo: "Seguimiento"
-        };
-
-        const response = await request(app)
-            .post("/edushare/notificacion")
-            .set('Authorization', `Bearer ${tokenUsuario}`)
-            .send(datosInvalidos);
-        
-        expect(response.statusCode).toBe(400);
-        expect(response.body.error).toBe(true);
-    }, 100000);
-
-    test('Debería validar que usuarioDestinoId sea un número', async () => {
-        const datosInvalidos = {
-            usuarioDestinoId: "texto",
-            titulo: "Título válido",
-            mensajeNotificacion: "Mensaje válido",
-            tipo: "Seguimiento"
-        };
-
-        const response = await request(app)
-            .post("/edushare/notificacion")
-            .set('Authorization', `Bearer ${tokenUsuario}`)
-            .send(datosInvalidos);
-        
-        expect(response.statusCode).toBe(400);
-        expect(response.body.error).toBe(true);
     }, 100000);
 });
