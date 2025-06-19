@@ -1,6 +1,6 @@
 import sql from 'mssql';
 import { RetornarTipoDeConexion } from './connection/ConfiguracionConexion.js';
-import { logger } from '../../utilidades/logger.js';
+import { logger } from '../../utilidades/Logger.js';
 
 export async function ProbarConexion() {
   const config = RetornarTipoDeConexion();

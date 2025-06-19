@@ -1,0 +1,50 @@
+
+services:
+  db-edushare:
+    build: ./API/initdb-scripts
+    container_name: db-edushare
+    restart: always
+    environment:
+      - SA_PASSWORD=AdminLOG2981!
+      - ACCEPT_EULA=Y
+      - TZ=America/Mexico_City
+    ports:
+      - "1433:1433"
+    networks:
+      - edushare-net
+
+  edushare-servidornoti:
+    build: ./notificaciones
+    container_name: edushare-servidornoti
+    ports:
+      - "8765:8765"
+    depends_on:
+      - db-edushare
+    networks:
+      - edushare-net
+
+  edushare-grpc:
+    build: ./api_grpc
+    container_name: edushare-grpc
+    ports:
+      - "50051:50051"
+    depends_on:
+      - db-edushare
+    networks:
+      - edushare-net
+
+  edushare-apirest:
+    build: ./API
+    container_name: edushare-apirest
+    ports:
+      - "1234:1234"
+    depends_on:
+      - edushare-grpc
+      - edushare-servidornoti
+      - db-edushare
+    networks:
+      - edushare-net
+
+networks:
+  edushare-net:
+    driver: bridge

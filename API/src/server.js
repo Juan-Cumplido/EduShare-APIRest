@@ -31,7 +31,8 @@ export const CrearServidor = ({ModeloAcceso, ModeloPublicacion, ModeloCatalogo, 
 
     const PUERTO = process.env.PUERTO;
 
-    app.listen(PUERTO,()=>{
-        console.log(`Servidor activo en la siguiente ruta http://"0.0.0.0":${PUERTO}`);
-    })
+    app.listen(PUERTO, '0.0.0.0', () => {
+        console.log(`Servidor activo en http://0.0.0.0:${PUERTO}`);
+    });
+
 }
