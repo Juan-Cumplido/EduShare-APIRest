@@ -1,0 +1,23 @@
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. file_service.proto
+
+python -m venv venv
+
+
+
+pip install grpcio grpcio-tools pillow pymupdf
+pip install PyMuPDF
+
+pip install --no-cache-dir -r requirements.txt
+
+
+python -c "import grpc; import PIL; import fitz; print('Todo OK')"
+
+
+
+EJECUTAR EL SERVIDOR
+
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+.\venv\Scripts\Activate.ps1
+
+python server.py
