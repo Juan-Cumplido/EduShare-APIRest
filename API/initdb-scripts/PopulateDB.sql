@@ -26,9 +26,12 @@ INSERT INTO Categoria (nombreCategoria) VALUES
 ('Apuntes'),
 ('Resúmenes'),
 ('Guías de estudio'),
-('Exámenes'),
 ('Tareas'),
-('Presentaciones');
+('Plantillas'),
+('Infografías'),
+('Cuestionarios'),
+('Mapas conceptuales'),
+('Manuales');
 
 
 INSERT INTO Rama (nombreRama)
