@@ -14,7 +14,7 @@ En este repositorio encontrarás los archivos de configuración necesarios para 
 ---
 ## 💻 Instalación en Docker 
 
-1. Abre el proyecto en la carpeta `GameLog`.
+1. Abre el proyecto en la carpeta `EduShare`.
 2. Ejecuta el siguiente comando:
    ```bash
    docker-compose up -d --build
